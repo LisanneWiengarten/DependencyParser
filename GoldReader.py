@@ -2,7 +2,7 @@ from Sentence import Sentence
 from Sentence import Token
 
 # Used to read in a file in conll06 format that contains all dependency relations
-class Reader:
+class GoldReader:
 	def __init__(self, infile):
 		self.filey = open(infile, "r")
 		# List of all the sentences in gold standard
