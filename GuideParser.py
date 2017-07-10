@@ -98,8 +98,7 @@ class GuideParser:
 			#self.extract_feats(c, "LA")
 			
 		if c.stack[0].pos != "root_pos":
-			self.current_sent.tokenlist[c.buffer[0].id].head = c.stack[0].id
-			print "I am ", self.current_sent.tokenlist[c.buffer[0].id].id, " and my new head is ", c.stack[0].id
+			self.current_sent.tokenlist[c.stack[0].id].head = c.buffer[0].id
 			self.found_larcs.add((c.buffer[0].id, c.stack[0].id))
 			del c.stack[0]
 			
@@ -111,8 +110,7 @@ class GuideParser:
 		#if len(c.stack) > 0:
 			#self.extract_feats(c, "RA")
 			
-		self.current_sent.tokenlist[c.stack[0].id].head = c.buffer[0].id
-		print "I am ", self.current_sent.tokenlist[c.stack[0].id].id, " and my new head is ", c.buffer[0].id
+		self.current_sent.tokenlist[c.buffer[0].id].head = c.stack[0].id
 		self.found_rarcs.add((c.stack[0].id, c.buffer[0].id))
 		del c.buffer[0]
 		c.buffer.appendleft(c.stack[0])
@@ -137,7 +135,6 @@ class GuideParser:
 	# Input: Unknown sentence
 	def parse_sentence(self, sent):
 		self.current_sent = sent
-		print "Currrent sent: ", sent.write()
 		self.found_rarcs = set()
 		self.found_larcs = set()
 		
@@ -152,21 +149,21 @@ class GuideParser:
 			
 				# If Guide predicts LA
 				if len(c.stack) > 0 and predicted_transition == "LA":
-					print "Predicted LA for config ", cfeats
+					#print "Predicted LA for config ", cfeats
 					c = self.doleftarc(c)
 			
 				# If Guide predicts RA
 				elif len(c.stack) > 0 and predicted_transition == "RA":
-					print "Predicted RA for config ", cfeats
+					#print "Predicted RA for config ", cfeats
 					c = self.dorightarc(c)
 					
 				# If Guide predicts Shift
 				else:
-					print "Predicted shift for config ", cfeats
+					#print "Predicted shift for config ", cfeats
 					c = self.shift(c)
 					
 			else:
-					print "shift because stack empty"
+					#print "shift because stack empty"
 					c = self.shift(c)
 				
 		self.current_sent.rightarcs = self.found_rarcs

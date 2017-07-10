@@ -22,7 +22,6 @@ class Configuration:
 		self.stack = deque(st)
 		# Buffer b: first-in first-out append_front pop_front only
 		self.buffer = deque(buff)
-		self.created_arcs = arcs
 		
 	def write(self):
 		out = "Stack: "
@@ -31,9 +30,6 @@ class Configuration:
 		out += "\n Buffer: "
 		for b in self.buffer:
 			out += b.write()
-		out += "\n Arcs: "
-		for a in self.created_arcs:
-			out += a
 		return out
 	
 
@@ -103,6 +99,7 @@ class OracleParser:
 			self.extract_feats(c, "LA")
 			
 		if c.stack[0].pos != "root_pos":
+			self.correct_sent.tokenlist[c.stack[0].id].head = c.buffer[0].id
 			self.found_larcs.add((c.buffer[0].id, c.stack[0].id))
 			del c.stack[0]
 			
@@ -114,6 +111,7 @@ class OracleParser:
 		if len(c.stack) > 0:
 			self.extract_feats(c, "RA")
 			
+		self.correct_sent.tokenlist[c.buffer[0].id].head = c.stack[0].id
 		self.found_rarcs.add((c.stack[0].id, c.buffer[0].id))
 		del c.buffer[0]
 		c.buffer.appendleft(c.stack[0])
@@ -200,11 +198,7 @@ class OracleParser:
 				# perform a shift
 				# the current state is now the new config from the new transition
 				c = self.shift(c)
-		
-		print "Correct RAs:", self.correct_ras
-		print "Found RAs: ", self.found_rarcs
-		print "Correct LAs:", self.correct_las
-		print "Found LAs:", self.found_larcs
+
 		return 1
 
 # end: Parser

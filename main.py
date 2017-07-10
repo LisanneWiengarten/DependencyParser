@@ -21,7 +21,7 @@ def main(trainfile, testfile):
 		
 		
 	# Train the classifier
-	classifier = Classifier(oracleparser.raw_feats, oracleparser.unique_feats, 3, 7)
+	classifier = Classifier(oracleparser.raw_feats, oracleparser.unique_feats, 300, 7)
 	classifier.train()
 	#classifier.save_model("model")
 	
@@ -34,9 +34,9 @@ def main(trainfile, testfile):
 	parser = GuideParser(classifier)
 	for s in testsents.sentlist:
 		parsed = parser.parse_sentence(s)
-		#print parsed.write()
-		#print "LAs: ", parsed.leftarcs
-		#print "RAs: ", parsed.rightarcs
+		print parsed.write()
+		print "LAs: ", parsed.leftarcs
+		print "RAs: ", parsed.rightarcs
 		
 		
 	stop = timeit.default_timer()

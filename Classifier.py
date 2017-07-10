@@ -21,7 +21,7 @@ class Classifier:
 		# Number of features to be used
 		self.num_feats = num_feats
 		
-		self.classes = ["SH", "LA", "RA"]
+		self.classes = ["SH", "RA", "LA"]
 		# Stores the weight vector for each class
 		self.weightmatrix = dict()
 		
@@ -104,7 +104,9 @@ class Classifier:
 						# ^yi = argmaxy (W[y]*phi(xi))
 						current_max = current_activation
 						predicted_class = c
-						
+				
+				#print "Category: ", category, "Featlist: ", feature_list, sum(feature_list)
+				#print "Predicited: ", predicted_class
 				# Update Rule:
 				# If we did not predict, the correct category, update the weight matrix
 				# if ^yi != yi then

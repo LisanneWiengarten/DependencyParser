@@ -25,11 +25,11 @@ class GoldReader:
 			if len(splitted) == 10:
 				token = Token(splitted[0], splitted[1],splitted[2],splitted[3],splitted[4],splitted[5],splitted[6],splitted[7],splitted[8],splitted[9])
 				# If the id (pos 0) is left from its head (pos 6), then add an LA between them
-				if splitted[0] < splitted[6]:
+				if int(splitted[0]) < int(splitted[6]):
 					leftarcs.add((int(splitted[6]), int(splitted[0])))
 				else:
 				# Otherwise, add an RA
-					rightarcs.add((int(splitted[6]), int(splitted[0])))
+					rightarcs.add((int(splitted[6]), int(splitted[0]))), int(splitted[6]) + int(splitted[0])
 					
 				# If the current token has 0 as its head, add the artificial root arc to it
 				if splitted[6] == 0:
