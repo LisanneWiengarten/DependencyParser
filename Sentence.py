@@ -1,4 +1,5 @@
-# class for tokens 
+# Class for Tokens
+# One token consists of id, form, lemma, pos, morph1, morph2, head, relation, empty1 and empty2
 class Token:
 	def __init__(self, id_in, form_in, lemma_in, pos_in, morph1_in, morph2_in, head_in, rel_in, empty1_in, empty2_in):
 		self.id = int(id_in)
@@ -13,24 +14,31 @@ class Token:
 		self.empty2 = empty2_in
 		self.ld = -1
 
+	
+	# Prettily write a token to string
 	def write(self):
 		return str(self.id) + "\t" + self.form + "\t" + self.lemma + "\t" + self.pos + "\t" + self.morph1 + "\t" + self.morph2 + "\t" + str(self.head) + "\t" + self.rel + "\t" + self.empty1 + "\t" + self.empty2
 
 
 
-# class for sentences (list of tokens)
+		
+# Class for Sentences
+# A sentence is basically a list of sentences, plus set for leftarcs and rightarcs
 class Sentence:
 	def __init__(self, words):
 		self.tokenlist = words
 		self.rightarcs = ()
 		self.leftarcs = ()
 		
+	
 	def set_rightarcs(self, ras):
 		self.rightarcs = ras
 		
+	
 	def set_leftarcs(self, las):
 		self.leftarcs = las
 		
+	
 	# Searches and sets the leftmost dependent for each token in the sentence
 	# If there is none, the parameter is set to -1
 	def leftmost_dependents(self):
@@ -45,6 +53,7 @@ class Sentence:
 			else:
 				current.ld = -1
 				
+	
 	# Returns the token with the given id
 	def get_token_by_id(self, id):
 		for token in self.tokenlist:
@@ -53,6 +62,8 @@ class Sentence:
 				
 		return Token(-1, "NAN", "NAN", "nan_pos", "_", "_", -2, "_", "_", "_\n")
 	
+	
+	# Prettily writes a sentence to string
 	def write(self):
 		out = str()
 		for token in self.tokenlist:

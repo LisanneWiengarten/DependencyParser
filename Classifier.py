@@ -2,7 +2,7 @@ import numpy
 import pickle
 from operator import sub, add
 
-# My smaller feature set:
+# My feature set:
 # B[0]-form form of buffer front dog
 # B[0]-pos pos of buffer front NN
 # S[0]-form form of stack top The
@@ -11,11 +11,15 @@ from operator import sub, add
 # S[1]-pos pos of second stack item root POS
 # ld(B[0])-pos pos of left-most dep of buffer front JJ
 
+
+# Trains a model for dependency parsing
+# IN: The 'raw' features, the unique features, the number of iterations and the number of features that were extracted
+# The trained model can predict the next best transition (shift, LA or RA) given a configuration
 class Classifier:
 	def __init__(self, rawfeats, ufeats, iterations, num_feats):
 		# List of tuples (transition, list of feats (strings!))
 		self.raw_feats = rawfeats
-		# All features that have been seen during training (strings)
+		# All features that have been seen in goldstandard (strings)
 		self.unique_feats = ufeats
 		
 		# Number of features to be used
@@ -147,14 +151,9 @@ class Classifier:
 		
 	# Save the trained model to a pickle file
 	def save_model(self, model_name):
-		with open(model_name + ".pik", 'wb') as f:
+		with open(model_name, 'wb') as f:
 			pickle.dump(self, f, pickle.HIGHEST_PROTOCOL)
 			
-			
-	# Load a model from a pickle file
-	def load_model(self, model_name):
-		with open(model_name + ".pik", 'rb') as f:
-			return pickle.load(f)
 			
 # During each iteration of training, the data (formatted as a feature vector)
 # is read in, and the dot product is taken with each unique weight vector

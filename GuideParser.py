@@ -14,27 +14,7 @@ from collections import deque
 
 from Sentence import Sentence
 from Sentence import Token
-
-	
-class Configuration:
-	def __init__(self, st, buff, arcs):
-		# Stack o: last-in first-out append_back pop_front only
-		self.stack = deque(st)
-		# Buffer b: first-in first-out append_front pop_front only
-		self.buffer = deque(buff)
-		self.created_arcs = arcs
-		
-	def write(self):
-		out = "Stack: "
-		for s in self.stack:
-			out += s.write()
-		out += "\n Buffer: "
-		for b in self.buffer:
-			out += b.write()
-		out += "\n Arcs: "
-		for a in self.created_arcs:
-			out += a
-		return out
+from Configuration import Configuration
 	
 
 class GuideParser:
@@ -139,7 +119,7 @@ class GuideParser:
 		self.found_larcs = set()
 		
 		# current state/config is the start state/config
-		c = Configuration([sent.tokenlist[0]], sent.tokenlist[1:], set())
+		c = Configuration([sent.tokenlist[0]], sent.tokenlist[1:])
 		
 		# while buffer is not empty
 		while len(c.buffer) > 0:
