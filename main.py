@@ -27,6 +27,8 @@ def load_model(model_name):
 	with open(model_name, 'rb') as f:
 		return pickle.load(f)
 
+		
+### MAIN FUNCTION ###
 def main(argv):
 	start = timeit.default_timer()	
 		
@@ -70,9 +72,12 @@ def main(argv):
 			oracleparser = OracleParser()
 			for s in goldstandard.goldlist:
 				oracleparser.parse_sentence(s)
+				
+			#print "Raw feats: ", oracleparser.raw_feats
+			#print "unique feats: ", oracleparser.unique_feats
 		
 			# Train the classifier
-			classifier = Classifier(oracleparser.raw_feats, oracleparser.unique_feats, 300, 7)
+			classifier = Classifier(oracleparser.raw_feats, oracleparser.unique_feats, 100)
 			classifier.train()
 			
 			classifier.save_model(model_name)

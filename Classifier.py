@@ -16,16 +16,13 @@ from operator import sub, add
 # IN: The 'raw' features, the unique features, the number of iterations and the number of features that were extracted
 # The trained model can predict the next best transition (shift, LA or RA) given a configuration
 class Classifier:
-	def __init__(self, rawfeats, ufeats, iterations, num_feats):
+	def __init__(self, rawfeats, ufeats, iterations):
 		# List of tuples (transition, list of feats (strings!))
 		self.raw_feats = rawfeats
 		# All features that have been seen in goldstandard (strings)
 		self.unique_feats = ufeats
 		
-		# Number of features to be used
-		self.num_feats = num_feats
-		
-		self.classes = ["SH", "RA", "LA"]
+		self.classes = ["RA", "SH", "LA"]
 		# Stores the weight vector for each class
 		self.weightmatrix = dict()
 		
@@ -66,7 +63,7 @@ class Classifier:
 					
 			# Finally, for every train item, we get a tuple (transition, vector(with numbers where a 1 would be in the long vector))
 			#self.feats.append((item[0], current))
-		return current
+		return sorted(current)
 	
 	
 	# In: training set D with pairs of input objects (train instance) and class labels (operation)
@@ -82,9 +79,8 @@ class Classifier:
 	
 		# Instantiate all zeros to every class label in W (Create a weight vector wy for every class y)
 		# W[y] = ->0 for every y in Y
-		# W ist Matrix 3x7 (3 Klassen (SH, LA, RA) x 7 Feats)
 		for c in self.classes:	
-			self.weightmatrix[c] = [0] * self.num_feats
+			self.weightmatrix[c] = [0] * len(self.unique_feats)
 		
 		# durch alle Iterationen gehen (feste val)
 		# for _ in xrange(self.iterations):
@@ -103,7 +99,13 @@ class Classifier:
 				# For each class, get dot product of the current feat vector and the weight vector of the current class
 				# If the calculated val is higher than the current max, update the max and the class we currently predict
 				for c in self.classes:
-					current_activation = numpy.dot(feature_list, self.weightmatrix[c])
+					# Take all the numbers in the feature_list as indices in weight vector:
+						# Get the vals at these indices and add them
+					current_activation = 0
+					for i in feature_list:
+						current_activation += self.weightmatrix[c][i]
+					#current_activation = numpy.dot(feature_list, self.weightmatrix[c])
+					#print "For class ", c, " we found current_activation ", current_activation, " - current_max is ", current_max
 					if current_activation >= current_max:
 						# ^yi = argmaxy (W[y]*phi(xi))
 						current_max = current_activation
@@ -112,20 +114,26 @@ class Classifier:
 				#print "Category: ", category, "Featlist: ", feature_list, sum(feature_list)
 				#print "Predicited: ", predicted_class
 				# Update Rule:
-				# If we did not predict, the correct category, update the weight matrix
+				# If we did not predict the correct category, update the weight matrix
 				# if ^yi != yi then
 					# W[yi] = W[yi]+phi(xi)
 					# W[^yi] = W[^yi]-phi(xi)
 				if (category != predicted_class):
-					self.weightmatrix[category] = map(add, self.weightmatrix[category], feature_list)
-					self.weightmatrix[predicted_class] = map(sub, self.weightmatrix[predicted_class], feature_list)
+					# For updating, get all vals from feature_list as indices in weight vector
+					# Just add/subtract 1 at each of these indices
+					for p in feature_list:
+						self.weightmatrix[category][p] += 1
+						self.weightmatrix[predicted_class][p] -= 1
+					#self.weightmatrix[category] = map(add, self.weightmatrix[category], feature_list)
+					#self.weightmatrix[predicted_class] = map(sub, self.weightmatrix[predicted_class], feature_list)
 				
 				else:
 					correct += 1
 			
 			acc = (float(correct)/float(total))*100
 		print "Acc: ", acc
-		print self.weightmatrix
+		for c in self.classes:
+			print c, sum(self.weightmatrix[c])
 
 	
 	# Predicts the best transition given the features of a config
@@ -135,12 +143,21 @@ class Classifier:
 
         # Initialize current_max value and predicted class
 		current_max, predicted_class = 0, self.classes[0]
+		
 
         # Multi-Class Decision Rule:
 		# For each class, get dot product of the current feat vector and the weight vector of the current class
 		# If the calculated val is higher than the current max, update the max and the class we currently predict
 		for c in self.classes:
-			current_activation = numpy.dot(transformed, self.weightmatrix[c])
+			# Reshape weightmatrix because number of unique feats becomes bigger during testing
+			#self.weightmatrix[c].extend([0] * (len(self.unique_feats) - len(self.weightmatrix[c])))
+			current_activation = 0
+			for i in transformed:
+				if i < len(self.weightmatrix[c])-1:
+				#print "I am adding ", current_activation, "+", self.weightmatrix[c][i]
+					current_activation += self.weightmatrix[c][i]
+			# current_activation = numpy.dot(transformed, self.weightmatrix[c])
+			#print "For class ", c, " we found current_activation ", current_activation, " - current_max is ", current_max
 			if current_activation >= current_max:
 				current_max = current_activation
 				predicted_class = c

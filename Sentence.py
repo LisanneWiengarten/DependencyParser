@@ -1,5 +1,5 @@
 # Class for Tokens
-# One token consists of id, form, lemma, pos, morph1, morph2, head, relation, empty1 and empty2
+# One token consists of id, form, lemma, pos, morph1, morph2, head, relation, empty1, empty2, leftmost- and rightmost dependent
 class Token:
 	def __init__(self, id_in, form_in, lemma_in, pos_in, morph1_in, morph2_in, head_in, rel_in, empty1_in, empty2_in):
 		self.id = int(id_in)
@@ -13,6 +13,7 @@ class Token:
 		self.empty1 = empty1_in
 		self.empty2 = empty2_in
 		self.ld = -1
+		self.rd = -1
 
 	
 	# Prettily write a token to string
@@ -30,7 +31,6 @@ class Sentence:
 		self.rightarcs = ()
 		self.leftarcs = ()
 		
-	
 	def set_rightarcs(self, ras):
 		self.rightarcs = ras
 		
@@ -38,6 +38,9 @@ class Sentence:
 	def set_leftarcs(self, las):
 		self.leftarcs = las
 		
+	def set_dependents(self):
+		self.leftmost_dependents()
+		self.rightmost_dependents()
 	
 	# Searches and sets the leftmost dependent for each token in the sentence
 	# If there is none, the parameter is set to -1
@@ -53,6 +56,20 @@ class Sentence:
 			else:
 				current.ld = -1
 				
+	# Searches and sets the rightmost dependent for each token in the sentence
+	# If there is none, the parameter is set to -1
+	def rightmost_dependents(self):
+		# My rightmost dependent is the biggest number that has me as head
+		for current in self.tokenlist:
+			rd = -2
+			for other in self.tokenlist:
+				if current.id == int(other.head) and other.id > rd:
+					rd = other.id
+			if rd > -2:
+				current.rd = rd
+			else:
+				current.rd = -1
+				
 	
 	# Returns the token with the given id
 	def get_token_by_id(self, id):
@@ -66,7 +83,7 @@ class Sentence:
 	# Prettily writes a sentence to string
 	def write(self):
 		out = str()
-		for token in self.tokenlist:
+		for token in self.tokenlist[1:]:
 			out += token.write()
 		return out
 

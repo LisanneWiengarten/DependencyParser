@@ -50,23 +50,72 @@ class GuideParser:
 	# S[1]-pos pos of second stack item root POS
 	# ld(B[0])-pos pos of left-most dep of buffer front JJ
 	def extract_feats(self, c, transition):
-		current_feats = list()
-		current_feats.append("b0form_"+c.buffer[0].form)
-		current_feats.append("b0pos_"+c.buffer[0].pos)
-		current_feats.append("s0form_"+c.stack[0].form)
-		current_feats.append("s0pos_"+c.stack[0].pos)
-		token = self.current_sent.get_token_by_id(c.buffer[0].ld)
-		current_feats.append("ldbopos_"+token.pos)
+		b0pos = c.buffer[0].pos
+		b0form = c.buffer[0].form
+		
+		# Set some default values for the cases if stack and/or buffer are too sparse
+		if len(c.stack) > 0:
+			hs0 = self.current_sent.get_token_by_id(c.stack[0].head).pos
+			lds0 = self.current_sent.get_token_by_id(c.stack[0].ld).pos
+			rds0 = self.current_sent.get_token_by_id(c.stack[0].rd).pos
+			s0form = c.stack[0].form
+			s0pos = c.stack[0].pos	
+		else:
+			hs0 = "NAN"
+			lds0 = "NAN"
+			rds0 = "NAN"
+			s0form = "NAN"
+			s0pos = "NAN"
+		
+		if len(c.stack) > 1:
+			s1pos = c.stack[1].pos
+		else:
+			s1pos = "NAN"
 		
 		if len(c.buffer) > 1:
-			current_feats.append("b1pos_"+c.buffer[1].pos)
+			b1pos = c.buffer[1].pos
+			b1form = c.buffer[1].form	
 		else:
-			current_feats.append("b1pos_NAN")
+			b1pos = "NAN"
+			b1form = "NAN"
 			
-		if len(c.stack) > 1:
-			current_feats.append("s1pos_"+c.stack[1].pos)
+		if len(c.buffer) > 2:
+			b2pos = c.buffer[2].pos
+			b2form = c.buffer[2].form
 		else:
-			current_feats.append("s1pos_NAN")
+			b2pos = "NAN"
+			b2form = "NAN"
+			
+		current_feats = list()
+		current_feats.append("b0form_"+b0form)													# B[0]-form
+		current_feats.append("b0pos_"+b0pos)													# B[0]-pos
+		current_feats.append("b0form,pos_"+b0form+"_"+b0pos)									# B[0]-form,pos
+		ldb0 = self.current_sent.get_token_by_id(c.buffer[0].ld)
+		current_feats.append("ldb0pos_"+ldb0.pos)												# ld(B[0])-pos
+		current_feats.append("s0form_"+s0form)													# S[0]-form
+		current_feats.append("s0pos_"+s0pos)													# S[0]-pos
+		current_feats.append("s0form,pos_"+s0form+"_"+s0pos)									# S[0]-form,pos
+		current_feats.append("s0form,pos_"+s0form+"_"+s0pos+"+b0form,pos_"+b0form+"_"+b0pos)	# S[0]-form,pos+B[0]-form,pos
+		current_feats.append("s0form,pos_"+s0form+"_"+s0pos+"+b0form_"+b0form)					# S[0]-form,pos+B[0]-form
+		current_feats.append("s0form_"+s0form+"+b0form,pos_"+b0form+"_"+b0pos)					# S[0]-form+B[0]-form,pos
+		current_feats.append("s0form,pos_"+s0form+"_"+s0pos+"+b0pos_"+b0pos)					# S[0]-form,pos+B[0]-pos
+		current_feats.append("s0pos_"+s0pos+"+b0form,pos_"+b0form+"_"+b0pos)					# S[0]-pos+B[0]-form,pos
+		current_feats.append("s0form_"+s0form+"+b0form_"+b0form)								# S[0]-form+B[0]-form
+		current_feats.append("s0pos_"+s0pos+"+b0pos_"+b0pos)									# S[0]-pos+B[0]-pos
+		current_feats.append("hs0pos_"+hs0+"+s0pos_"+s0pos+"b0pos_"+b0pos)						# h(S[0])-pos+S[0]-pos+B[0]-pos
+		current_feats.append("s0pos_"+s0pos+"+lds0pos_"+lds0+"+b0pos_"+b0pos)					# S[0]-pos+ld(S[0])-pos+B[0]-pos
+		current_feats.append("s0pos_"+s0pos+"+b0pos_"+b0pos+"+ldb0pos_"+ldb0.pos)				# S[0]-pos+B[0]-pos+ld(B[0])-pos
+		current_feats.append("s0pos_"+s0pos+"+rds0_"+rds0+"+b0pos_"+b0pos)						# S[0]-pos+rd(S[0])-pos+B[0]-pos
+		current_feats.append("b1pos_"+b1pos)													# B[1]-pos
+		current_feats.append("b1form_"+b1form)													# B[1]-form
+		current_feats.append("b1form,pos_"+b1form+"_"+b1pos)									# B[1]-form,pos
+		current_feats.append("b0pos_"+b0pos+"+b1pos_"+b1pos)									# B[0]-pos+B[1]-pos
+		current_feats.append("s0pos_"+s0pos+"+b0pos_"+b0pos+"+b1pos_"+b1pos)					# S[0]-pos+B[0]-pos+B[1]-pos
+		current_feats.append("b2pos_"+b2pos)													# B[2]-pos
+		current_feats.append("b2form_"+b2form)													# B[2]-form
+		current_feats.append("b2form,pos_"+b2form+"_"+b2pos)									# B[2]-form,pos
+		current_feats.append("b0pos_"+b0pos+"+b1pos_"+b1pos+"+b2pos_"+b2pos)					# B[0]-pos+B[1]-pos+B[2]-pos
+		current_feats.append("s1pos_"+s1pos)													# S[1]-pos
 				
 		return (transition, current_feats)
 
@@ -123,28 +172,27 @@ class GuideParser:
 		
 		# while buffer is not empty
 		while len(c.buffer) > 0:
-			if len(c.stack) > 0:
-				cfeats = self.extract_feats(c, "NA")
-				predicted_transition = self.classifier.predict(cfeats)
+			cfeats = self.extract_feats(c, "NA")
+			predicted_transition = self.classifier.predict(cfeats)
 			
-				# If Guide predicts LA
-				if len(c.stack) > 0 and predicted_transition == "LA":
-					#print "Predicted LA for config ", cfeats
-					c = self.doleftarc(c)
+			# If Guide predicts LA
+			if predicted_transition == "LA" and len(c.stack) > 0 and c.stack[0].pos != "root_pos":
+				#print "Predicted LA for config ", cfeats
+				c = self.doleftarc(c)
 			
-				# If Guide predicts RA
-				elif len(c.stack) > 0 and predicted_transition == "RA":
-					#print "Predicted RA for config ", cfeats
-					c = self.dorightarc(c)
+			# If Guide predicts RA
+			elif predicted_transition == "RA" and len(c.stack) > 0:
+				#print "Predicted RA for config ", cfeats
+				c = self.dorightarc(c)
 					
-				# If Guide predicts Shift
-				else:
-					#print "Predicted shift for config ", cfeats
-					c = self.shift(c)
-					
+			# If Guide predicts Shift
 			else:
+				#print "Predicted shift for config ", cfeats
+				c = self.shift(c)
+					
+			#else:
 					#print "shift because stack empty"
-					c = self.shift(c)
+					#c = self.shift(c)
 				
 		self.current_sent.rightarcs = self.found_rarcs
 		self.current_sent.leftarcs = self.found_larcs

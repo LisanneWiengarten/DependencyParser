@@ -43,32 +43,106 @@ class OracleParser:
 		
 		
 	# Extracts the features of the current config for training
-	# My smaller feature set:
+	# My feature set:
 	# B[0]-form form of buffer front dog
 	# B[0]-pos pos of buffer front NN
 	# S[0]-form form of stack top The
 	# S[0]-pos pos of stack top DT
 	# B[1]-pos pos of second buffer item VBZ
+	# B[1]-form form of second buffer item
+	# B[2]-form
+	# B[2]-pos
 	# S[1]-pos pos of second stack item root POS
 	# ld(B[0])-pos pos of left-most dep of buffer front JJ
+	# S[0]-form,pos
+	# B[0]-form,pos
+	# B[1]-form,pos
+	# B[2]-form,pos
+	
+	# S[0]-form,pos+B[0]-form,pos
+	# S[0]-form,pos+B[0]-form
+	# S[0]-form+B[0]-form,pos
+	# S[0]-form,pos+B[0]-pos
+	# S[0]-pos+B[0]-form,pos
+	# S[0]-form+B[0]-form
+	# S[0]-pos+B[0]-pos
+	# B[0]-pos+B[1]-pos
+	
+	# B[0]-pos+B[1]-pos+B[2]-pos
+	# S[0]-pos+B[0]-pos+B[1]-pos
+	# h(S[0])-pos+S[0]-pos+B[0]-pos
+	# S[0]-pos+ld(S[0])-pos+B[0]-pos
+	# S[0]-pos+B[0]-pos+ld(B[0])-pos
+	# S[0]-pos+rd(S[0])-pos+B[0]-pos
+	
 	def extract_feats(self, c, transition):
-		current_feats = list()
-		current_feats.append("b0form_"+c.buffer[0].form)
-		current_feats.append("b0pos_"+c.buffer[0].pos)
-		current_feats.append("s0form_"+c.stack[0].form)
-		current_feats.append("s0pos_"+c.stack[0].pos)
-		token = self.correct_sent.get_token_by_id(c.buffer[0].ld)
-		current_feats.append("ldbopos_"+token.pos)
+		b0pos = c.buffer[0].pos
+		b0form = c.buffer[0].form
+		
+		# Set some default values for the cases if stack and/or buffer are too sparse
+		if len(c.stack) > 0:
+			hs0 = self.correct_sent.get_token_by_id(c.stack[0].head).pos
+			lds0 = self.correct_sent.get_token_by_id(c.stack[0].ld).pos
+			rds0 = self.correct_sent.get_token_by_id(c.stack[0].rd).pos
+			s0form = c.stack[0].form
+			s0pos = c.stack[0].pos	
+		else:
+			hs0 = "NAN"
+			lds0 = "NAN"
+			rds0 = "NAN"
+			s0form = "NAN"
+			s0pos = "NAN"
+		
+		if len(c.stack) > 1:
+			s1pos = c.stack[1].pos
+		else:
+			s1pos = "NAN"
 		
 		if len(c.buffer) > 1:
-			current_feats.append("b1pos_"+c.buffer[1].pos)
+			b1pos = c.buffer[1].pos
+			b1form = c.buffer[1].form	
 		else:
-			current_feats.append("b1pos_NAN")
+			b1pos = "NAN"
+			b1form = "NAN"
 			
-		if len(c.stack) > 1:
-			current_feats.append("s1pos_"+c.stack[1].pos)
+		if len(c.buffer) > 2:
+			b2pos = c.buffer[2].pos
+			b2form = c.buffer[2].form
 		else:
-			current_feats.append("s1pos_NAN")
+			b2pos = "NAN"
+			b2form = "NAN"
+			
+		current_feats = list()
+		current_feats.append("b0form_"+b0form)													# B[0]-form
+		current_feats.append("b0pos_"+b0pos)													# B[0]-pos
+		current_feats.append("b0form,pos_"+b0form+"_"+b0pos)									# B[0]-form,pos
+		ldb0 = self.correct_sent.get_token_by_id(c.buffer[0].ld)
+		current_feats.append("ldb0pos_"+ldb0.pos)												# ld(B[0])-pos
+		current_feats.append("s0form_"+s0form)													# S[0]-form
+		current_feats.append("s0pos_"+s0pos)													# S[0]-pos
+		current_feats.append("s0form,pos_"+s0form+"_"+s0pos)									# S[0]-form,pos
+		current_feats.append("s0form,pos_"+s0form+"_"+s0pos+"+b0form,pos_"+b0form+"_"+b0pos)	# S[0]-form,pos+B[0]-form,pos
+		current_feats.append("s0form,pos_"+s0form+"_"+s0pos+"+b0form_"+b0form)					# S[0]-form,pos+B[0]-form
+		current_feats.append("s0form_"+s0form+"+b0form,pos_"+b0form+"_"+b0pos)					# S[0]-form+B[0]-form,pos
+		current_feats.append("s0form,pos_"+s0form+"_"+s0pos+"+b0pos_"+b0pos)					# S[0]-form,pos+B[0]-pos
+		current_feats.append("s0pos_"+s0pos+"+b0form,pos_"+b0form+"_"+b0pos)					# S[0]-pos+B[0]-form,pos
+		current_feats.append("s0form_"+s0form+"+b0form_"+b0form)								# S[0]-form+B[0]-form
+		current_feats.append("s0pos_"+s0pos+"+b0pos_"+b0pos)									# S[0]-pos+B[0]-pos
+		current_feats.append("hs0pos_"+hs0+"+s0pos_"+s0pos+"b0pos_"+b0pos)						# h(S[0])-pos+S[0]-pos+B[0]-pos
+		current_feats.append("s0pos_"+s0pos+"+lds0pos_"+lds0+"+b0pos_"+b0pos)					# S[0]-pos+ld(S[0])-pos+B[0]-pos
+		current_feats.append("s0pos_"+s0pos+"+b0pos_"+b0pos+"+ldb0pos_"+ldb0.pos)				# S[0]-pos+B[0]-pos+ld(B[0])-pos
+		current_feats.append("s0pos_"+s0pos+"+rds0_"+rds0+"+b0pos_"+b0pos)						# S[0]-pos+rd(S[0])-pos+B[0]-pos
+		current_feats.append("b1pos_"+b1pos)													# B[1]-pos
+		current_feats.append("b1form_"+b1form)													# B[1]-form
+		current_feats.append("b1form,pos_"+b1form+"_"+b1pos)									# B[1]-form,pos
+		current_feats.append("b0pos_"+b0pos+"+b1pos_"+b1pos)									# B[0]-pos+B[1]-pos
+		current_feats.append("s0pos_"+s0pos+"+b0pos_"+b0pos+"+b1pos_"+b1pos)					# S[0]-pos+B[0]-pos+B[1]-pos
+		current_feats.append("b2pos_"+b2pos)													# B[2]-pos
+		current_feats.append("b2form_"+b2form)													# B[2]-form
+		current_feats.append("b2form,pos_"+b2form+"_"+b2pos)									# B[2]-form,pos
+		current_feats.append("b0pos_"+b0pos+"+b1pos_"+b1pos+"+b2pos_"+b2pos)					# B[0]-pos+B[1]-pos+B[2]-pos
+		current_feats.append("s1pos_"+s1pos)													# S[1]-pos
+		
 		
 		self.raw_feats.append((transition, current_feats))
 		for item in current_feats:
@@ -78,23 +152,16 @@ class OracleParser:
 
 	# leftarc introduces an arc from the front of the buffer to the top-most token on the stack and removes the top-most token on the stack
 	# BUT: top of the stack must not be root
-	def doleftarc(self, c):
-		if len(c.stack) > 0:
-			self.extract_feats(c, "LA")
-			
-		if c.stack[0].pos != "root_pos":
-			self.correct_sent.tokenlist[c.stack[0].id].head = c.buffer[0].id
-			self.found_larcs.add((c.buffer[0].id, c.stack[0].id))
-			del c.stack[0]
+	def doleftarc(self, c):	
+		self.correct_sent.tokenlist[c.stack[0].id].head = c.buffer[0].id
+		self.found_larcs.add((c.buffer[0].id, c.stack[0].id))
+		del c.stack[0]
 			
 		return c
 
 
 	# rightarc introduces an arc from the top-most token on the stack to the front of the buffer and moves the top-most token from the stack back onto the buffer
-	def dorightarc(self, c):
-		if len(c.stack) > 0:
-			self.extract_feats(c, "RA")
-			
+	def dorightarc(self, c):	
 		self.correct_sent.tokenlist[c.buffer[0].id].head = c.stack[0].id
 		self.found_rarcs.add((c.stack[0].id, c.buffer[0].id))
 		del c.buffer[0]
@@ -107,12 +174,8 @@ class OracleParser:
 	# shift takes the first token from the front of the buffer and pushes it onto the stack
 	# BUT: buffer size is at least 1 OR stack is empty
 	def shift(self, c):
-		if len(c.stack) > 0:
-			self.extract_feats(c, "SH")
-			
-		if len(c.buffer) > 0 or len(c.stack) == 0:
-			c.stack.appendleft(c.buffer[0])
-			c.buffer.popleft()
+		c.stack.appendleft(c.buffer[0])
+		c.buffer.popleft()
 			
 		return c
 
@@ -172,15 +235,18 @@ class OracleParser:
 		while len(c.buffer) > 0:
 			# if it's possible to form a leftarc with the current state/config and A then build this leftarc
 			if len(c.stack) > 0 and self.canleftarc(c):
+				self.extract_feats(c, "LA")
 				c = self.doleftarc(c)
 			
 			# else if it's possible to form a rightarc with the current state/config and A then build this rightarc
 			elif len(c.stack) > 0 and self.canrightarc(c, gold):
+				self.extract_feats(c, "RA")
 				c = self.dorightarc(c)
 			 
 			else:
 				# perform a shift
 				# the current state is now the new config from the new transition
+				self.extract_feats(c, "SH")
 				c = self.shift(c)
 
 		return 1

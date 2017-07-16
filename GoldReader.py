@@ -50,7 +50,7 @@ class GoldReader:
 				sentence = Sentence(tokenlist)
 				sentence.set_rightarcs(rightarcs)
 				sentence.set_leftarcs(leftarcs)
-				sentence.leftmost_dependents()
+				sentence.set_dependents()
 				self.goldlist.append(sentence)
 				# Clean everything for the next sentence
 				tokenlist = ([Token(0, "ROOT", "ROOT", "root_pos", "_", "_", -1, "_", "_", "_\n")])
