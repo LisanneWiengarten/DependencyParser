@@ -1,6 +1,16 @@
+"""
+Lisanne Wiengarten
+Matriculation no. 3249897
+Statistical Dependency Parsing
+IMS, SuSe 17
+"""
+
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 from collections import deque
 
-# Class for representing configurations
+# Class for representing configurations #
 # IN: Stack and Buffer
 class Configuration:
 	def __init__(self, st, buff):

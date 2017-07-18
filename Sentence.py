@@ -1,4 +1,15 @@
-# Class for Tokens
+"""
+Lisanne Wiengarten
+Matriculation no. 3249897
+Statistical Dependency Parsing
+IMS, SuSe 17
+"""
+
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+
+# Class for Tokens #
 # One token consists of id, form, lemma, pos, morph1, morph2, head, relation, empty1, empty2, leftmost- and rightmost dependent
 class Token:
 	def __init__(self, id_in, form_in, lemma_in, pos_in, morph1_in, morph2_in, head_in, rel_in, empty1_in, empty2_in):
@@ -23,8 +34,8 @@ class Token:
 
 
 		
-# Class for Sentences
-# A sentence is basically a list of sentences, plus set for leftarcs and rightarcs
+# Class for Sentences # 
+# A sentence is basically a list of sentences, plus sets for leftarcs and rightarcs
 class Sentence:
 	def __init__(self, words):
 		self.tokenlist = words
@@ -34,15 +45,16 @@ class Sentence:
 	def set_rightarcs(self, ras):
 		self.rightarcs = ras
 		
-	
 	def set_leftarcs(self, las):
 		self.leftarcs = las
 		
+	# While reading in the goldstandard, the leftmost- and rightmost dependents are set
+	# because they are needed for training
 	def set_dependents(self):
 		self.leftmost_dependents()
 		self.rightmost_dependents()
 	
-	# Searches and sets the leftmost dependent for each token in the sentence
+	# Searches and sets the leftmost dependent for each token in the sentence #
 	# If there is none, the parameter is set to -1
 	def leftmost_dependents(self):
 		# My leftmost dependent is the smallest number that has me as head
@@ -56,7 +68,7 @@ class Sentence:
 			else:
 				current.ld = -1
 				
-	# Searches and sets the rightmost dependent for each token in the sentence
+	# Searches and sets the rightmost dependent for each token in the sentence #
 	# If there is none, the parameter is set to -1
 	def rightmost_dependents(self):
 		# My rightmost dependent is the biggest number that has me as head
@@ -69,9 +81,8 @@ class Sentence:
 				current.rd = rd
 			else:
 				current.rd = -1
-				
-	
-	# Returns the token with the given id
+			
+	# Returns the token with the given id #
 	def get_token_by_id(self, id):
 		for token in self.tokenlist:
 			if token.id == id:
@@ -79,8 +90,8 @@ class Sentence:
 				
 		return Token(-1, "NAN", "NAN", "nan_pos", "_", "_", -2, "_", "_", "_\n")
 	
-	
-	# Prettily writes a sentence to string
+	# Prettily writes a sentence to string #
+	# Omits the artificial root token
 	def write(self):
 		out = str()
 		for token in self.tokenlist[1:]:

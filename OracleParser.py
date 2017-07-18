@@ -1,14 +1,12 @@
+"""
+Lisanne Wiengarten
+Matriculation no. 3249897
+Statistical Dependency Parsing
+IMS, SuSe 17
+"""
+
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
-# Oracle parsing with ArcStandard (maybe switch to ArcEager)
-# in: a blind conll file (parse each sentence separately)
-#	set of correct arcs A from wsj.gold?
-# out: same conll file, but the heads and labels have been found
-# replace oracle by multiclass classification
-# Use weight vector to predict the next transition
-#	Train the weight vector using Multiclass Perceptron (what are the classes?) (what is the input?)
-#	Train on pairs of configurations (x i ) and transitions (y i ) given by the oracle transition sequence
 
 from collections import deque
 
@@ -16,20 +14,11 @@ from Sentence import Sentence
 from Sentence import Token
 from Configuration import Configuration
 	
-
+# Does Oracle parsing with ArcStandard #
+# In: The preprocessed list of sentences from a goldstandard
+# Does parsing on this goldstandard ro extract the features needed for training a classifier
 class OracleParser:
 	def __init__(self):
-		# Set of Configurations	C
-		# A config is a triple from (o, b, A)
-		self.configs = list()
-		# Start state cs in C
-		self.cs = list()
-		# Stack o: last-in first-out append_back pop_front only
-		self.stack = deque()
-		# Buffer b: first-in first-out append_front pop_front only
-		self.buff = deque()
-		# Set of correct arcs Ag
-		self.arcs = list()
 		
 		# Sets for correct and found arcs
 		self.correct_sent = Sentence(list())
@@ -79,7 +68,9 @@ class OracleParser:
 		b0pos = c.buffer[0].pos
 		b0form = c.buffer[0].form
 		
-		# Set some default values for the cases if stack and/or buffer are too sparse
+		# Set some default values for the cases if stack and/or buffer are too short
+		
+		# If the stack is empty, the form, pos, head, ld and rd from the front of the stack cannot be recovered
 		if len(c.stack) > 0:
 			hs0 = self.correct_sent.get_token_by_id(c.stack[0].head).pos
 			lds0 = self.correct_sent.get_token_by_id(c.stack[0].ld).pos
@@ -93,11 +84,13 @@ class OracleParser:
 			s0form = "NAN"
 			s0pos = "NAN"
 		
+		# If the stack contains only one item, the pos from the second item cannot be recovered
 		if len(c.stack) > 1:
 			s1pos = c.stack[1].pos
 		else:
 			s1pos = "NAN"
 		
+		# If the buffer contains only one item, the pos and form from the second item cannot be recovered
 		if len(c.buffer) > 1:
 			b1pos = c.buffer[1].pos
 			b1form = c.buffer[1].form	
@@ -105,6 +98,7 @@ class OracleParser:
 			b1pos = "NAN"
 			b1form = "NAN"
 			
+		# If the buffer contains only two items, the pos and form from the third item cannot be recovered
 		if len(c.buffer) > 2:
 			b2pos = c.buffer[2].pos
 			b2form = c.buffer[2].form
@@ -144,14 +138,16 @@ class OracleParser:
 		current_feats.append("s1pos_"+s1pos)													# S[1]-pos
 		
 		
+		# The raw_feats contain the actual transition mapped to the list of strings
+		# The unique_feats contain all the features that were seen in the goldstandard only once
 		self.raw_feats.append((transition, current_feats))
 		for item in current_feats:
 			if item not in self.unique_feats:
 				self.unique_feats.append(item)
 
 
-	# leftarc introduces an arc from the front of the buffer to the top-most token on the stack and removes the top-most token on the stack
-	# BUT: top of the stack must not be root
+	# Creates a leftarc from the front of the buffer to the top-most token on the stack #
+	# And removes the top-most token on the stack
 	def doleftarc(self, c):	
 		self.correct_sent.tokenlist[c.stack[0].id].head = c.buffer[0].id
 		self.found_larcs.add((c.buffer[0].id, c.stack[0].id))
@@ -160,7 +156,8 @@ class OracleParser:
 		return c
 
 
-	# rightarc introduces an arc from the top-most token on the stack to the front of the buffer and moves the top-most token from the stack back onto the buffer
+	# Creates a right from the top-most token on the stack to the front of the buffer #
+	# And moves the top-most token from the stack back onto the buffer
 	def dorightarc(self, c):	
 		self.correct_sent.tokenlist[c.buffer[0].id].head = c.stack[0].id
 		self.found_rarcs.add((c.stack[0].id, c.buffer[0].id))
@@ -171,17 +168,15 @@ class OracleParser:
 		return c
 
 		
-	# shift takes the first token from the front of the buffer and pushes it onto the stack
-	# BUT: buffer size is at least 1 OR stack is empty
+	# Shift takes the first token from the front of the buffer and pushes it onto the stack #
 	def shift(self, c):
 		c.stack.appendleft(c.buffer[0])
 		c.buffer.popleft()
 			
 		return c
 
-# !! Instead of canla and canra, we ask the classifier which operation it predicts !!
 
-	# Checks whether all dependents for a specific token have already been found
+	# Checks whether all dependents for a specific token have already been found #
 	def has_all_children(self, current_token, gold):
 		# Find all dependents of this token
 		children = list()
@@ -198,20 +193,21 @@ class OracleParser:
 		return True
 
 
-	# Given a state/config and the set of correct arcs, determine whether a leftarc might be build	
+	# Given a configuration and the set of correct arcs, determines whether a leftarc might be build #
 	def canleftarc(self, c):
 		if c.stack[0].pos == "root_pos":
 			return False
-		# if there is a leftarc from the first item in b to the first item in o, return true
+		# If there is a leftarc from the first item in b to the first item in the goldstandard, return true
 		if (c.stack[0].id, c.buffer[0].id) in self.correct_las or (c.buffer[0].id, c.stack[0].id) in self.correct_las:
 			return True
 		
 		return False
 
 		
-	# Given a state/config and the set of correct arcs, determine whether a rightarc might be build 	
+	# Given a configuration and the set of correct arcs, determines whether a rightarc might be build #
 	def canrightarc(self, c, gold):
-		# if there is a rightarc from the first item in o to the first item in b AND this first item in b already has all its children then return true
+		# If there is a rightarc from the first item in the goldstandard to the first item in b 
+		# AND this first item in b already has all its children, then return true
 		if (c.stack[0].id, c.buffer[0].id) in self.correct_ras and self.has_all_children(c.buffer[0], gold):
 			return True
 		elif (c.buffer[0].id, c.stack[0].id) in self.correct_ras and self.has_all_children(c.buffer[0], gold):
@@ -220,7 +216,9 @@ class OracleParser:
 		return False
 
 	
-	# Input: Correctly parsed sentence
+	# Does the actual oracle parsing #
+	# In: Correctly annotated sentence from goldstandard
+	# Performs all parsing steps on this sentence so the features can be extracted for training
 	def parse_sentence(self, gold):
 		self.correct_sent = gold
 		self.correct_ras = gold.rightarcs
@@ -228,28 +226,27 @@ class OracleParser:
 		self.found_rarcs = set()
 		self.found_larcs = set()
 		
-		# current state/config is the start state/config
+		# Start configuration: Root on stack, all tokens on buffer, empty arc set
 		c = Configuration([gold.tokenlist[0]], gold.tokenlist[1:])
 		
-		# while buffer is not empty
+		# While buffer is not empty
 		while len(c.buffer) > 0:
-			# if it's possible to form a leftarc with the current state/config and A then build this leftarc
+		
+			# If it's possible to form a leftarc with the current configuration and the goldstandard
+			# Then build this leftarc and extract the features
 			if len(c.stack) > 0 and self.canleftarc(c):
 				self.extract_feats(c, "LA")
 				c = self.doleftarc(c)
 			
-			# else if it's possible to form a rightarc with the current state/config and A then build this rightarc
+			# Else if it's possible to form a rightarc with the current configuration and the goldstandard
+			# Then build this rightarc and extract the features
 			elif len(c.stack) > 0 and self.canrightarc(c, gold):
 				self.extract_feats(c, "RA")
 				c = self.dorightarc(c)
 			 
+			# Else perform a shift and extract the features
 			else:
-				# perform a shift
-				# the current state is now the new config from the new transition
 				self.extract_feats(c, "SH")
 				c = self.shift(c)
 
 		return 1
-
-# end: Parser
-
