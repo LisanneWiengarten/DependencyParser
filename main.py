@@ -22,6 +22,7 @@ from GuideParser import GuideParser
 # Usage function
 def usage():
 	print "Usage of " +sys.argv[0]+":"
+	print "python "+sys.argv[0]+" --help shows this message"
 	print "For saving a trained model: python "+sys.argv[0]+" --train trainfile.conll06 --save modelname.pik"
 	print "Without the --save option, the model will be automatically saved to model.pik"
 	print "For training a model: python "+sys.argv[0]+" --train trainfile.conll06"
@@ -98,8 +99,14 @@ def main(argv):
 			# Train the classifier
 			classifier = Classifier(oracleparser.raw_feats, oracleparser.unique_feats, 100)
 			classifier.train()
+			if log:
+				stop = timeit.default_timer()
+				print "Training completed ", stop - start
 			
 			classifier.save_model(model_name)
+			if log:
+				stop = timeit.default_timer()
+				print "Model saved ", stop - start
 			
 		### TESTING ###
 		elif opt in ('-test', '--test'):

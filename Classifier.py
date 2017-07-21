@@ -43,7 +43,12 @@ class Classifier:
 	def transform(self):
 		# For every item in the training data,
 		# check whether it has a certain feature (1) or not (0)
+		counter = 0
+		length = len(self.raw_feats)
 		for item in self.raw_feats:
+			if (counter % 1000 == 0):
+				print "Transforming feat ", counter, " of ", length
+			counter += 1
 			current = list()
 			for i in range(len(item[1])):
 				if item[1][i] in self.unique_feats:
@@ -65,7 +70,7 @@ class Classifier:
 				current.append(self.unique_feats.index(raw_feat[1][i]))
 			else:
 				self.num_ufeats += 1
-				current.append(num_ufeats)
+				current.append(self.num_ufeats)
 					
 		return sorted(current)
 	
@@ -82,6 +87,7 @@ class Classifier:
 		
 
 		for i in range(self.iterations):
+			print "Train iteration ", i
 			
 			# For each given training example
 			for (category, feature_list) in self.feats:
@@ -116,12 +122,12 @@ class Classifier:
 				else:
 					correct += 1
 			
-			acc = (float(correct)/float(total))*100
-			
+		
+		acc = (float(correct)/float(total))*100	
 		# Print final accuracy of training	
-		# print "Acc: ", acc
-		# for c in self.classes:
-			# print c, sum(self.weightmatrix[c])
+		print "Acc: ", acc
+		for c in self.classes:
+			print c, sum(self.weightmatrix[c])
 
 	
 	# Predicts the best transition given the features of a config #

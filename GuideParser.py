@@ -37,9 +37,9 @@ class GuideParser:
 		
 		# If the stack is empty, the form, pos, head, ld and rd from the front of the stack cannot be recovered
 		if len(c.stack) > 0:
-			hs0 = self.correct_sent.get_token_by_id(c.stack[0].head).pos
-			lds0 = self.correct_sent.get_token_by_id(c.stack[0].ld).pos
-			rds0 = self.correct_sent.get_token_by_id(c.stack[0].rd).pos
+			hs0 = self.current_sent.get_token_by_id(c.stack[0].head).pos
+			lds0 = self.current_sent.get_token_by_id(c.stack[0].ld).pos
+			rds0 = self.current_sent.get_token_by_id(c.stack[0].rd).pos
 			s0form = c.stack[0].form
 			s0pos = c.stack[0].pos	
 		else:
@@ -75,7 +75,7 @@ class GuideParser:
 		current_feats.append("b0form_"+b0form)													# B[0]-form
 		current_feats.append("b0pos_"+b0pos)													# B[0]-pos
 		current_feats.append("b0form,pos_"+b0form+"_"+b0pos)									# B[0]-form,pos
-		ldb0 = self.correct_sent.get_token_by_id(c.buffer[0].ld)
+		ldb0 = self.current_sent.get_token_by_id(c.buffer[0].ld)
 		current_feats.append("ldb0pos_"+ldb0.pos)												# ld(B[0])-pos
 		current_feats.append("s0form_"+s0form)													# S[0]-form
 		current_feats.append("s0pos_"+s0pos)													# S[0]-pos
