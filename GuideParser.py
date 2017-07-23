@@ -25,13 +25,17 @@ class GuideParser:
 		
 		# The classifier to ask for predicted transitions
 		self.classifier = classifier
+		self.unique_feats = classifier.unique_feats
 		
 		
 	# Extracts the features of the current config for training # 
 	# Same feature set as in OracleParser
 	def extract_feats(self, c, transition):
+		current_feat = list()
+	
 		b0pos = c.buffer[0].pos
 		b0form = c.buffer[0].form
+		ldb0 = self.current_sent.get_token_by_id(c.buffer[0].ld)
 		
 		# Set some default values for the cases if stack and/or buffer are too short
 		
@@ -70,40 +74,49 @@ class GuideParser:
 		else:
 			b2pos = "NAN"
 			b2form = "NAN"
-			
-		current_feats = list()
-		current_feats.append("b0form_"+b0form)													# B[0]-form
-		current_feats.append("b0pos_"+b0pos)													# B[0]-pos
-		current_feats.append("b0form,pos_"+b0form+"_"+b0pos)									# B[0]-form,pos
-		ldb0 = self.current_sent.get_token_by_id(c.buffer[0].ld)
-		current_feats.append("ldb0pos_"+ldb0.pos)												# ld(B[0])-pos
-		current_feats.append("s0form_"+s0form)													# S[0]-form
-		current_feats.append("s0pos_"+s0pos)													# S[0]-pos
-		current_feats.append("s0form,pos_"+s0form+"_"+s0pos)									# S[0]-form,pos
-		current_feats.append("s0form,pos_"+s0form+"_"+s0pos+"+b0form,pos_"+b0form+"_"+b0pos)	# S[0]-form,pos+B[0]-form,pos
-		current_feats.append("s0form,pos_"+s0form+"_"+s0pos+"+b0form_"+b0form)					# S[0]-form,pos+B[0]-form
-		current_feats.append("s0form_"+s0form+"+b0form,pos_"+b0form+"_"+b0pos)					# S[0]-form+B[0]-form,pos
-		current_feats.append("s0form,pos_"+s0form+"_"+s0pos+"+b0pos_"+b0pos)					# S[0]-form,pos+B[0]-pos
-		current_feats.append("s0pos_"+s0pos+"+b0form,pos_"+b0form+"_"+b0pos)					# S[0]-pos+B[0]-form,pos
-		current_feats.append("s0form_"+s0form+"+b0form_"+b0form)								# S[0]-form+B[0]-form
-		current_feats.append("s0pos_"+s0pos+"+b0pos_"+b0pos)									# S[0]-pos+B[0]-pos
-		current_feats.append("hs0pos_"+hs0+"+s0pos_"+s0pos+"b0pos_"+b0pos)						# h(S[0])-pos+S[0]-pos+B[0]-pos
-		current_feats.append("s0pos_"+s0pos+"+lds0pos_"+lds0+"+b0pos_"+b0pos)					# S[0]-pos+ld(S[0])-pos+B[0]-pos
-		current_feats.append("s0pos_"+s0pos+"+b0pos_"+b0pos+"+ldb0pos_"+ldb0.pos)				# S[0]-pos+B[0]-pos+ld(B[0])-pos
-		current_feats.append("s0pos_"+s0pos+"+rds0_"+rds0+"+b0pos_"+b0pos)						# S[0]-pos+rd(S[0])-pos+B[0]-pos
-		current_feats.append("b1pos_"+b1pos)													# B[1]-pos
-		current_feats.append("b1form_"+b1form)													# B[1]-form
-		current_feats.append("b1form,pos_"+b1form+"_"+b1pos)									# B[1]-form,pos
-		current_feats.append("b0pos_"+b0pos+"+b1pos_"+b1pos)									# B[0]-pos+B[1]-pos
-		current_feats.append("s0pos_"+s0pos+"+b0pos_"+b0pos+"+b1pos_"+b1pos)					# S[0]-pos+B[0]-pos+B[1]-pos
-		current_feats.append("b2pos_"+b2pos)													# B[2]-pos
-		current_feats.append("b2form_"+b2form)													# B[2]-form
-		current_feats.append("b2form,pos_"+b2form+"_"+b2pos)									# B[2]-form,pos
-		current_feats.append("b0pos_"+b0pos+"+b1pos_"+b1pos+"+b2pos_"+b2pos)					# B[0]-pos+B[1]-pos+B[2]-pos
-		current_feats.append("s1pos_"+s1pos)													# S[1]-pos
+		
+		feature_set = ["b0form_"+b0form, 												# B[0]-form
+						"b0pos_"+b0pos, 												# B[0]-pos
+						"b0form,pos_"+b0form+"_"+b0pos,									# B[0]-form,pos
+						"ldb0pos_"+ldb0.pos,											# ld(B[0])-pos
+						"s0form_"+s0form,												# S[0]-form
+						"s0pos_"+s0pos,													# S[0]-pos
+						"s0form,pos_"+s0form+"_"+s0pos,									# S[0]-form,pos
+						"s0form,pos_"+s0form+"_"+s0pos+"+b0form,pos_"+b0form+"_"+b0pos,	# S[0]-form,pos+B[0]-form,pos
+						"s0form,pos_"+s0form+"_"+s0pos+"+b0form_"+b0form,				# S[0]-form,pos+B[0]-form
+						"s0form_"+s0form+"+b0form,pos_"+b0form+"_"+b0pos,				# S[0]-form+B[0]-form,pos
+						"s0form,pos_"+s0form+"_"+s0pos+"+b0pos_"+b0pos,					# S[0]-form,pos+B[0]-pos
+						"s0pos_"+s0pos+"+b0form,pos_"+b0form+"_"+b0pos,					# S[0]-pos+B[0]-form,pos		
+						"s0form,pos_"+s0form+"_"+s0pos+"+b0pos_"+b0pos,					# S[0]-form,pos+B[0]-pos
+						"s0pos_"+s0pos+"+b0form,pos_"+b0form+"_"+b0pos,					# S[0]-pos+B[0]-form,pos
+						"s0form_"+s0form+"+b0form_"+b0form,								# S[0]-form+B[0]-form
+						"s0pos_"+s0pos+"+b0pos_"+b0pos,									# S[0]-pos+B[0]-pos
+						"hs0pos_"+hs0+"+s0pos_"+s0pos+"b0pos_"+b0pos,					# h(S[0],-pos+S[0]-pos+B[0]-pos
+						"s0pos_"+s0pos+"+lds0pos_"+lds0+"+b0pos_"+b0pos,				# S[0]-pos+ld(S[0],-pos+B[0]-pos
+						"s0pos_"+s0pos+"+b0pos_"+b0pos+"+ldb0pos_"+ldb0.pos,			# S[0]-pos+B[0]-pos+ld(B[0],-pos
+						"s0pos_"+s0pos+"+rds0_"+rds0+"+b0pos_"+b0pos,					# S[0]-pos+rd(S[0],-pos+B[0]-pos
+						"b1pos_"+b1pos,													# B[1]-pos
+						"b1form_"+b1form,												# B[1]-form
+						"b1form,pos_"+b1form+"_"+b1pos,									# B[1]-form,pos
+						"b0pos_"+b0pos+"+b1pos_"+b1pos,									# B[0]-pos+B[1]-pos
+						"s0pos_"+s0pos+"+b0pos_"+b0pos+"+b1pos_"+b1pos,					# S[0]-pos+B[0]-pos+B[1]-pos
+						"b2pos_"+b2pos,													# B[2]-pos
+						"b2form_"+b2form,												# B[2]-form
+						"b2form,pos_"+b2form+"_"+b2pos,									# B[2]-form,pos
+						"b0pos_"+b0pos+"+b1pos_"+b1pos+"+b2pos_"+b2pos,					# B[0]-pos+B[1]-pos+B[2]-pos
+						"s1pos_"+s1pos]													# S[1]-pos
+		
+		for feat in feature_set:
+			# If this feat is already in unique_feats, append its index to the current_featlist
+			if feat in self.unique_feats:
+				current_feat.append(self.unique_feats.index(feat))
+		
+			# If this feat is not yet in unique_feats, append a bigger number
+			else:
+				current_feat.append(self.classifier.num_ufeats+1)
 				
 		# During testing, the set of features is not expanded anymore
-		return (transition, current_feats)
+		return (transition, current_feat)
 
 
 	# Creates a leftarc from the front of the buffer to the top-most token on the stack #
@@ -154,7 +167,7 @@ class GuideParser:
 		
 			# Instead of looking up in the goldstandard, the GuideParser asks the Classifier to predict the next best transition
 			cfeats = self.extract_feats(c, "NA")
-			predicted_transition = self.classifier.predict(cfeats)
+			predicted_transition = self.classifier.predict(cfeats[1])
 			
 			# If Guide predicts LA
 			if predicted_transition == "LA" and len(c.stack) > 0 and c.stack[0].pos != "root_pos":

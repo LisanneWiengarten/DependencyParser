@@ -27,7 +27,7 @@ class OracleParser:
 		self.found_rarcs = set()
 		self.found_larcs = set()
 		
-		self.raw_feats = list()
+		self.extracted_feats = list()
 		self.unique_feats = list()
 		
 		
@@ -65,8 +65,11 @@ class OracleParser:
 	# S[0]-pos+rd(S[0])-pos+B[0]-pos
 	
 	def extract_feats(self, c, transition):
+		current_feat = list()
+	
 		b0pos = c.buffer[0].pos
 		b0form = c.buffer[0].form
+		ldb0 = self.correct_sent.get_token_by_id(c.buffer[0].ld)
 		
 		# Set some default values for the cases if stack and/or buffer are too short
 		
@@ -105,45 +108,50 @@ class OracleParser:
 		else:
 			b2pos = "NAN"
 			b2form = "NAN"
-			
-		current_feats = list()
-		current_feats.append("b0form_"+b0form)													# B[0]-form
-		current_feats.append("b0pos_"+b0pos)													# B[0]-pos
-		current_feats.append("b0form,pos_"+b0form+"_"+b0pos)									# B[0]-form,pos
-		ldb0 = self.correct_sent.get_token_by_id(c.buffer[0].ld)
-		current_feats.append("ldb0pos_"+ldb0.pos)												# ld(B[0])-pos
-		current_feats.append("s0form_"+s0form)													# S[0]-form
-		current_feats.append("s0pos_"+s0pos)													# S[0]-pos
-		current_feats.append("s0form,pos_"+s0form+"_"+s0pos)									# S[0]-form,pos
-		current_feats.append("s0form,pos_"+s0form+"_"+s0pos+"+b0form,pos_"+b0form+"_"+b0pos)	# S[0]-form,pos+B[0]-form,pos
-		current_feats.append("s0form,pos_"+s0form+"_"+s0pos+"+b0form_"+b0form)					# S[0]-form,pos+B[0]-form
-		current_feats.append("s0form_"+s0form+"+b0form,pos_"+b0form+"_"+b0pos)					# S[0]-form+B[0]-form,pos
-		current_feats.append("s0form,pos_"+s0form+"_"+s0pos+"+b0pos_"+b0pos)					# S[0]-form,pos+B[0]-pos
-		current_feats.append("s0pos_"+s0pos+"+b0form,pos_"+b0form+"_"+b0pos)					# S[0]-pos+B[0]-form,pos
-		current_feats.append("s0form_"+s0form+"+b0form_"+b0form)								# S[0]-form+B[0]-form
-		current_feats.append("s0pos_"+s0pos+"+b0pos_"+b0pos)									# S[0]-pos+B[0]-pos
-		current_feats.append("hs0pos_"+hs0+"+s0pos_"+s0pos+"b0pos_"+b0pos)						# h(S[0])-pos+S[0]-pos+B[0]-pos
-		current_feats.append("s0pos_"+s0pos+"+lds0pos_"+lds0+"+b0pos_"+b0pos)					# S[0]-pos+ld(S[0])-pos+B[0]-pos
-		current_feats.append("s0pos_"+s0pos+"+b0pos_"+b0pos+"+ldb0pos_"+ldb0.pos)				# S[0]-pos+B[0]-pos+ld(B[0])-pos
-		current_feats.append("s0pos_"+s0pos+"+rds0_"+rds0+"+b0pos_"+b0pos)						# S[0]-pos+rd(S[0])-pos+B[0]-pos
-		current_feats.append("b1pos_"+b1pos)													# B[1]-pos
-		current_feats.append("b1form_"+b1form)													# B[1]-form
-		current_feats.append("b1form,pos_"+b1form+"_"+b1pos)									# B[1]-form,pos
-		current_feats.append("b0pos_"+b0pos+"+b1pos_"+b1pos)									# B[0]-pos+B[1]-pos
-		current_feats.append("s0pos_"+s0pos+"+b0pos_"+b0pos+"+b1pos_"+b1pos)					# S[0]-pos+B[0]-pos+B[1]-pos
-		current_feats.append("b2pos_"+b2pos)													# B[2]-pos
-		current_feats.append("b2form_"+b2form)													# B[2]-form
-		current_feats.append("b2form,pos_"+b2form+"_"+b2pos)									# B[2]-form,pos
-		current_feats.append("b0pos_"+b0pos+"+b1pos_"+b1pos+"+b2pos_"+b2pos)					# B[0]-pos+B[1]-pos+B[2]-pos
-		current_feats.append("s1pos_"+s1pos)													# S[1]-pos
 		
+		feature_set = ["b0form_"+b0form, 												# B[0]-form
+						"b0pos_"+b0pos, 												# B[0]-pos
+						"b0form,pos_"+b0form+"_"+b0pos,									# B[0]-form,pos
+						"ldb0pos_"+ldb0.pos,											# ld(B[0])-pos
+						"s0form_"+s0form,												# S[0]-form
+						"s0pos_"+s0pos,													# S[0]-pos
+						"s0form,pos_"+s0form+"_"+s0pos,									# S[0]-form,pos
+						"s0form,pos_"+s0form+"_"+s0pos+"+b0form,pos_"+b0form+"_"+b0pos,	# S[0]-form,pos+B[0]-form,pos
+						"s0form,pos_"+s0form+"_"+s0pos+"+b0form_"+b0form,				# S[0]-form,pos+B[0]-form
+						"s0form_"+s0form+"+b0form,pos_"+b0form+"_"+b0pos,				# S[0]-form+B[0]-form,pos
+						"s0form,pos_"+s0form+"_"+s0pos+"+b0pos_"+b0pos,					# S[0]-form,pos+B[0]-pos
+						"s0pos_"+s0pos+"+b0form,pos_"+b0form+"_"+b0pos,					# S[0]-pos+B[0]-form,pos		
+						"s0form,pos_"+s0form+"_"+s0pos+"+b0pos_"+b0pos,					# S[0]-form,pos+B[0]-pos
+						"s0pos_"+s0pos+"+b0form,pos_"+b0form+"_"+b0pos,					# S[0]-pos+B[0]-form,pos
+						"s0form_"+s0form+"+b0form_"+b0form,								# S[0]-form+B[0]-form
+						"s0pos_"+s0pos+"+b0pos_"+b0pos,									# S[0]-pos+B[0]-pos
+						"hs0pos_"+hs0+"+s0pos_"+s0pos+"b0pos_"+b0pos,					# h(S[0],-pos+S[0]-pos+B[0]-pos
+						"s0pos_"+s0pos+"+lds0pos_"+lds0+"+b0pos_"+b0pos,				# S[0]-pos+ld(S[0],-pos+B[0]-pos
+						"s0pos_"+s0pos+"+b0pos_"+b0pos+"+ldb0pos_"+ldb0.pos,			# S[0]-pos+B[0]-pos+ld(B[0],-pos
+						"s0pos_"+s0pos+"+rds0_"+rds0+"+b0pos_"+b0pos,					# S[0]-pos+rd(S[0],-pos+B[0]-pos
+						"b1pos_"+b1pos,													# B[1]-pos
+						"b1form_"+b1form,												# B[1]-form
+						"b1form,pos_"+b1form+"_"+b1pos,									# B[1]-form,pos
+						"b0pos_"+b0pos+"+b1pos_"+b1pos,									# B[0]-pos+B[1]-pos
+						"s0pos_"+s0pos+"+b0pos_"+b0pos+"+b1pos_"+b1pos,					# S[0]-pos+B[0]-pos+B[1]-pos
+						"b2pos_"+b2pos,													# B[2]-pos
+						"b2form_"+b2form,												# B[2]-form
+						"b2form,pos_"+b2form+"_"+b2pos,									# B[2]-form,pos
+						"b0pos_"+b0pos+"+b1pos_"+b1pos+"+b2pos_"+b2pos,					# B[0]-pos+B[1]-pos+B[2]-pos
+						"s1pos_"+s1pos]													# S[1]-pos
 		
-		# The raw_feats contain the actual transition mapped to the list of strings
-		# The unique_feats contain all the features that were seen in the goldstandard only once
-		self.raw_feats.append((transition, current_feats))
-		for item in current_feats:
-			if item not in self.unique_feats:
-				self.unique_feats.append(item)
+		for feat in feature_set:
+			# If this feat is already in unique_feats, append its index to the current_featlist
+			if feat in self.unique_feats:
+				current_feat.append(self.unique_feats.index(feat))
+		
+			# If this feat is not yet in unique_feats, append it
+			else:
+				self.unique_feats.append(feat)
+				current_feat.append(len(self.unique_feats)-1)
+					
+		self.extracted_feats.append((transition, current_feat))
+		
 
 
 	# Creates a leftarc from the front of the buffer to the top-most token on the stack #

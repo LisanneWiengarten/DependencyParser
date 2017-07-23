@@ -97,7 +97,7 @@ def main(argv):
 					print "Trained on another sentence", sents, stop - start
 		
 			# Train the classifier
-			classifier = Classifier(oracleparser.raw_feats, oracleparser.unique_feats, 100)
+			classifier = Classifier(oracleparser.extracted_feats, oracleparser.unique_feats, 10)
 			classifier.train()
 			if log:
 				stop = timeit.default_timer()
