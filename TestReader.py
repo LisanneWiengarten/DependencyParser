@@ -19,14 +19,14 @@ class TestReader:
 		# List of all the sentences in gold standard
 		self.sentlist = list()
 		# Artificial root token
-		self.root = Token(0, "ROOT", "ROOT", "root_pos", "_", "_", -1, "_", "_", "_\n")
+		self.root = Token(0, "ROOT", "ROOT", "root_pos", "_", "_", -1, "_", "_", "_")
 		
 		self.read_in()
 		
 	
 	# Actual process of reading the file #
 	def read_in(self):
-		tokenlist = ([Token(0, "ROOT", "ROOT", "root_pos", "_", "_", -1, "_", "_", "_\n")])
+		tokenlist = ([Token(0, "ROOT", "ROOT", "root_pos", "_", "_", -1, "_", "_", "_")])
 		rightarcs = set()
 		leftarcs = set()
 	
@@ -47,7 +47,7 @@ class TestReader:
 				self.sentlist.append(sentence)
 				
 				# Clean everything for the next sentence
-				tokenlist = ([Token(0, "ROOT", "ROOT", "root_pos", "_", "_", -1, "_", "_", "_\n")])
+				tokenlist = ([Token(0, "ROOT", "ROOT", "root_pos", "_", "_", -1, "_", "_", "_")])
 				rightarcs = set()
 				leftarcs = set()	
 		

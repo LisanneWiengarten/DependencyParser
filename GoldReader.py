@@ -20,7 +20,7 @@ class GoldReader:
 		# List of all the sentences in gold standard
 		self.goldlist = list()
 		# Artificial root token
-		self.root = Token(0, "ROOT", "ROOT", "root_pos", "_", "_", -1, "_", "_", "_\n")
+		self.root = Token(0, "ROOT", "ROOT", "root_pos", "_", "_", -1, "_", "_", "_")
 		
 		self.read_in()
 		
@@ -28,7 +28,7 @@ class GoldReader:
 	# Actual process of reading the file #
 	def read_in(self):
 		# Initialize the lists for token and arcs
-		tokenlist = ([Token(0, "ROOT", "ROOT", "root_pos", "_", "_", -1, "_", "_", "_\n")])
+		tokenlist = ([Token(0, "ROOT", "ROOT", "root_pos", "_", "_", -1, "_", "_", "_")])
 		rightarcs = set()
 		leftarcs = set()
 	
@@ -60,11 +60,10 @@ class GoldReader:
 				sentence = Sentence(tokenlist)
 				sentence.set_rightarcs(rightarcs)
 				sentence.set_leftarcs(leftarcs)
-				sentence.set_dependents()
 				self.goldlist.append(sentence)
 				
 				# Clean everything for the next sentence
-				tokenlist = ([Token(0, "ROOT", "ROOT", "root_pos", "_", "_", -1, "_", "_", "_\n")])
+				tokenlist = ([Token(0, "ROOT", "ROOT", "root_pos", "_", "_", -1, "_", "_", "_")])
 				rightarcs = set()
 				leftarcs = set()	
 		

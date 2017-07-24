@@ -19,9 +19,10 @@ from Configuration import Configuration
 # Does parsing on this goldstandard ro extract the features needed for training a classifier
 class OracleParser:
 	def __init__(self):
+		self.oracle = True
 		
 		# Sets for correct and found arcs
-		self.correct_sent = Sentence(list())
+		self.current_sent = Sentence(list())
 		self.correct_ras = set()
 		self.correct_las = set()
 		self.found_rarcs = set()
@@ -64,20 +65,20 @@ class OracleParser:
 	# S[0]-pos+B[0]-pos+ld(B[0])-pos
 	# S[0]-pos+rd(S[0])-pos+B[0]-pos
 	
-	def extract_feats(self, c, transition):
+	def extract_feats(self, c, current_sent):
 		current_feat = list()
 	
 		b0pos = c.buffer[0].pos
 		b0form = c.buffer[0].form
-		ldb0 = self.correct_sent.get_token_by_id(c.buffer[0].ld)
+		#ldb0 = current_sent.get_token_by_id(c.buffer[0].ld)
 		
 		# Set some default values for the cases if stack and/or buffer are too short
 		
 		# If the stack is empty, the form, pos, head, ld and rd from the front of the stack cannot be recovered
 		if len(c.stack) > 0:
-			hs0 = self.correct_sent.get_token_by_id(c.stack[0].head).pos
-			lds0 = self.correct_sent.get_token_by_id(c.stack[0].ld).pos
-			rds0 = self.correct_sent.get_token_by_id(c.stack[0].rd).pos
+			hs0 = current_sent.get_token_by_id(c.stack[0].head).pos
+			#lds0 = current_sent.get_token_by_id(c.stack[0].ld).pos
+			#rds0 = current_sent.get_token_by_id(c.stack[0].rd).pos
 			s0form = c.stack[0].form
 			s0pos = c.stack[0].pos	
 		else:
@@ -112,7 +113,7 @@ class OracleParser:
 		feature_set = ["b0form_"+b0form, 												# B[0]-form
 						"b0pos_"+b0pos, 												# B[0]-pos
 						"b0form,pos_"+b0form+"_"+b0pos,									# B[0]-form,pos
-						"ldb0pos_"+ldb0.pos,											# ld(B[0])-pos
+						#"ldb0pos_"+ldb0.pos,											# ld(B[0])-pos
 						"s0form_"+s0form,												# S[0]-form
 						"s0pos_"+s0pos,													# S[0]-pos
 						"s0form,pos_"+s0form+"_"+s0pos,									# S[0]-form,pos
@@ -126,9 +127,9 @@ class OracleParser:
 						"s0form_"+s0form+"+b0form_"+b0form,								# S[0]-form+B[0]-form
 						"s0pos_"+s0pos+"+b0pos_"+b0pos,									# S[0]-pos+B[0]-pos
 						"hs0pos_"+hs0+"+s0pos_"+s0pos+"b0pos_"+b0pos,					# h(S[0],-pos+S[0]-pos+B[0]-pos
-						"s0pos_"+s0pos+"+lds0pos_"+lds0+"+b0pos_"+b0pos,				# S[0]-pos+ld(S[0],-pos+B[0]-pos
-						"s0pos_"+s0pos+"+b0pos_"+b0pos+"+ldb0pos_"+ldb0.pos,			# S[0]-pos+B[0]-pos+ld(B[0],-pos
-						"s0pos_"+s0pos+"+rds0_"+rds0+"+b0pos_"+b0pos,					# S[0]-pos+rd(S[0],-pos+B[0]-pos
+						#"s0pos_"+s0pos+"+lds0pos_"+lds0+"+b0pos_"+b0pos,				# S[0]-pos+ld(S[0],-pos+B[0]-pos
+						#"s0pos_"+s0pos+"+b0pos_"+b0pos+"+ldb0pos_"+ldb0.pos,			# S[0]-pos+B[0]-pos+ld(B[0],-pos
+						#"s0pos_"+s0pos+"+rds0_"+rds0+"+b0pos_"+b0pos,					# S[0]-pos+rd(S[0],-pos+B[0]-pos
 						"b1pos_"+b1pos,													# B[1]-pos
 						"b1form_"+b1form,												# B[1]-form
 						"b1form,pos_"+b1form+"_"+b1pos,									# B[1]-form,pos
@@ -147,18 +148,21 @@ class OracleParser:
 		
 			# If this feat is not yet in unique_feats, append it
 			else:
+				current_feat.append(len(self.unique_feats))
+				
+			if self.oracle:
 				self.unique_feats.append(feat)
-				current_feat.append(len(self.unique_feats)-1)
-					
-		self.extracted_feats.append((transition, current_feat))
+				
+		return current_feat
 		
 
 
 	# Creates a leftarc from the front of the buffer to the top-most token on the stack #
 	# And removes the top-most token on the stack
 	def doleftarc(self, c):	
-		self.correct_sent.tokenlist[c.stack[0].id].head = c.buffer[0].id
+		self.current_sent.tokenlist[c.stack[0].id].head = c.buffer[0].id
 		self.found_larcs.add((c.buffer[0].id, c.stack[0].id))
+		
 		del c.stack[0]
 			
 		return c
@@ -167,8 +171,10 @@ class OracleParser:
 	# Creates a right from the top-most token on the stack to the front of the buffer #
 	# And moves the top-most token from the stack back onto the buffer
 	def dorightarc(self, c):	
-		self.correct_sent.tokenlist[c.buffer[0].id].head = c.stack[0].id
+		self.current_sent.tokenlist[c.buffer[0].id].head = c.stack[0].id
 		self.found_rarcs.add((c.stack[0].id, c.buffer[0].id))
+		
+		
 		del c.buffer[0]
 		c.buffer.appendleft(c.stack[0])
 		del c.stack[0]
@@ -207,6 +213,16 @@ class OracleParser:
 			return False
 		# If there is a leftarc from the first item in b to the first item in the goldstandard, return true
 		if (c.stack[0].id, c.buffer[0].id) in self.correct_las or (c.buffer[0].id, c.stack[0].id) in self.correct_las:
+			# LA S[0] <- B[0]
+			# My leftmost dependent is the smallest number that has me as head
+			# d.h. ld von B[0]: wenn mein ld > S[0] setze mein ld neu
+			#if c.buffer[0].ld > c.stack[0].id:
+				#c.buffer[0].ld = c.stack[0].id
+			
+			# My rightmost dependent is the biggest number that has me as head
+			# d.h. rd von B[0]: wenn rd < S[0] setze mein rd neu
+			#if c.buffer[0].rd < c.stack[0].id:
+				#c.buffer[0].rd = c.stack[0].id
 			return True
 		
 		return False
@@ -216,9 +232,17 @@ class OracleParser:
 	def canrightarc(self, c, gold):
 		# If there is a rightarc from the first item in the goldstandard to the first item in b 
 		# AND this first item in b already has all its children, then return true
-		if (c.stack[0].id, c.buffer[0].id) in self.correct_ras and self.has_all_children(c.buffer[0], gold):
-			return True
-		elif (c.buffer[0].id, c.stack[0].id) in self.correct_ras and self.has_all_children(c.buffer[0], gold):
+		if ((c.stack[0].id, c.buffer[0].id) in self.correct_ras and self.has_all_children(c.buffer[0], gold)) or ((c.buffer[0].id, c.stack[0].id) in self.correct_ras and self.has_all_children(c.buffer[0], gold)):
+			# My leftmost dependent is the smallest number that has me as head
+			# d.h. ld von S[0]: wenn mein ld > B[0] setze mein ld neu
+			#if c.stack[0].ld > c.buffer[0].id:
+				#c.stack[0].ld = c.buffer[0].id
+			
+			# My rightmost dependent is the biggest number that has me as head
+			# RA S[0] -> B[0]
+			# d.h. rd von S[0]: wenn rd < B[0] setze mein rd neu
+			#if c.stack[0].rd < c.buffer[0].id:
+				#c.stack[0].rd = c.buffer[0].id
 			return True
 			
 		return False
@@ -228,7 +252,7 @@ class OracleParser:
 	# In: Correctly annotated sentence from goldstandard
 	# Performs all parsing steps on this sentence so the features can be extracted for training
 	def parse_sentence(self, gold):
-		self.correct_sent = gold
+		self.current_sent = gold
 		self.correct_ras = gold.rightarcs
 		self.correct_las = gold.leftarcs
 		self.found_rarcs = set()
@@ -243,23 +267,27 @@ class OracleParser:
 			# If it's possible to form a leftarc with the current configuration and the goldstandard
 			# Then build this leftarc and extract the features
 			if len(c.stack) > 0 and self.canleftarc(c):
-				self.extract_feats(c, "LA")
+				new_feat = self.extract_feats(c, self.current_sent)
+				self.extracted_feats.append(("LA", new_feat))
 				c = self.doleftarc(c)
 			
 			# Else if it's possible to form a rightarc with the current configuration and the goldstandard
 			# Then build this rightarc and extract the features
 			elif len(c.stack) > 0 and self.canrightarc(c, gold):
-				self.extract_feats(c, "RA")
+				new_feat = self.extract_feats(c, self.current_sent)
+				self.extracted_feats.append(("RA", new_feat))
 				c = self.dorightarc(c)
 			 
 			# Else perform a shift and extract the features
 			else:
-				self.extract_feats(c, "SH")
+				new_feat = self.extract_feats(c, self.current_sent)
+				self.extracted_feats.append(("SH", new_feat))
 				c = self.shift(c)
 				
 		#print "Correct RAs:", self.correct_ras
 		#print "Found RAs:", self.found_rarcs
 		#print "Correct LAs:", self.correct_las
 		#print "Found LAs:", self.found_larcs
+		#print gold.write()
 
 		return 1

@@ -78,6 +78,7 @@ def main(argv):
 		# LOAD MODEL #
 		elif opt in ('-model', '--model'):
 			classifier = load_model(arg)
+			oracleparser = OracleParser()
 			
 		### TRAINING ###
 		elif opt in ('--train', '-train'):
@@ -87,7 +88,7 @@ def main(argv):
 			# Read in train data
 			goldstandard = GoldReader(arg)
 	
-			# Parse all sentences in golstandard
+			# Parse all sentences in goldstandard
 			oracleparser = OracleParser()
 			for s in goldstandard.goldlist:
 				oracleparser.parse_sentence(s)
@@ -107,6 +108,7 @@ def main(argv):
 			if log:
 				stop = timeit.default_timer()
 				print "Model saved ", stop - start
+				
 			
 		### TESTING ###
 		elif opt in ('-test', '--test'):
@@ -115,7 +117,7 @@ def main(argv):
 			
 			# Use the classifier to test new data
 			testsents = TestReader(arg)
-			parser = GuideParser(classifier)
+			parser = GuideParser(classifier, oracleparser)
 			
 			# Parse all sentences and write results to file
 			with open(output_name, 'w') as f:
