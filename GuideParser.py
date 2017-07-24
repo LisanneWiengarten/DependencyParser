@@ -30,7 +30,7 @@ class GuideParser:
 		
 	# Extracts the features of the current config for training # 
 	# Same feature set as in OracleParser
-	def extract_feats(self, c, transition):
+	def extract_feats(self, c):
 		current_feat = list()
 	
 		b0pos = c.buffer[0].pos
@@ -116,7 +116,7 @@ class GuideParser:
 				current_feat.append(self.classifier.num_ufeats+1)
 				
 		# During testing, the set of features is not expanded anymore
-		return (transition, current_feat)
+		return current_feat
 
 
 	# Creates a leftarc from the front of the buffer to the top-most token on the stack #
@@ -145,9 +145,8 @@ class GuideParser:
 		
 	# Shift takes the first token from the front of the buffer and pushes it onto the stack #
 	def shift(self, c):
-		if len(c.buffer) > 0 or len(c.stack) == 0:
-			c.stack.appendleft(c.buffer[0])
-			c.buffer.popleft()
+		c.stack.appendleft(c.buffer[0])
+		c.buffer.popleft()
 			
 		return c
 
@@ -166,8 +165,8 @@ class GuideParser:
 		while len(c.buffer) > 0:
 		
 			# Instead of looking up in the goldstandard, the GuideParser asks the Classifier to predict the next best transition
-			cfeats = self.extract_feats(c, "NA")
-			predicted_transition = self.classifier.predict(cfeats[1])
+			cfeats = self.extract_feats(c)
+			predicted_transition = self.classifier.predict(cfeats)
 			
 			# If Guide predicts LA
 			if predicted_transition == "LA" and len(c.stack) > 0 and c.stack[0].pos != "root_pos":

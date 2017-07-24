@@ -23,7 +23,7 @@ class Classifier:
 		self.unique_feats = ufeats
 		self.num_ufeats = len(self.unique_feats)
 		
-		self.classes = ["LA", "SH", "RA"]
+		self.classes = ["RA", "LA", "SH"]
 		# Stores the weight vector for each class
 		self.weightmatrix = dict()
 		
@@ -45,7 +45,7 @@ class Classifier:
 		# Each vector has the length of unique feats found in the goldstandard
 		for c in self.classes:	
 			self.weightmatrix[c] = [0] * len(self.unique_feats)
-		
+			
 
 		for i in range(self.iterations):
 			
@@ -53,68 +53,58 @@ class Classifier:
 			for item in self.feats:
 				total += 1
 				
-				category = item[0]
+				correct_class = item[0]
 				feature_list = item[1]
 			
-				# Initialize current_max value and predicted class
-				current_max = 0
-				predicted_class = "SH"
+				# Initialize current_max dict
+				current_max = {"RA":0,"LA":0,"SH":0}
 				
 				# For each class, instead of the dot product of two very long vectors,
 				# We only sum all the values from the weight vector at the indices given by the training example (same result)
-				for c in self.classes:
+				for c in self.weightmatrix:
 				
 					# Take all the numbers in the feature_list as indices in weight vector: Get the vals at these indices and add them
-					current_weight = 0
 					for i in feature_list:
-						current_weight += self.weightmatrix[c][i]
+						current_max[c] += self.weightmatrix[c][i]
 		
-					# Predict the class with the highest activation
-					if current_weight > current_max:
-						current_max = current_weight
-						predicted_class = c
+				# Predict the class with the highest activation
+				predicted_class = max(current_max, key=current_max.get)
 				
-				
-				# If we did not predict the correct category, update the weight matrix
-				if (category != predicted_class):
+				# If we did not predict the correct class, update the weight matrix
+				if (correct_class != predicted_class):
 					# For updating, get all vals from feature vector as indices in the weight vector
 					# Just add 1 at each of these indices for the correct class, and subtract 1 for the falsely predicted class
 					for p in feature_list:
-						self.weightmatrix[category][p] += 1
+						self.weightmatrix[correct_class][p] += 1
 						self.weightmatrix[predicted_class][p] -= 1
 				
 				else:
 					correct += 1
-			
 		
-		acc = (float(correct)/float(total))*100	
-		# Print final accuracy of training	
-		# print "Acc: ", acc
-		# for c in self.classes:
-			# print c, sum(self.weightmatrix[c])
+		
+			acc = (float(correct)/float(total))*100	
+			# Print final accuracy of training	
+			print "Acc: ", acc
+			for c in self.classes:
+				print c, sum(self.weightmatrix[c])
 
 	
 	# Predicts the best transition given the features of a config #
 	def predict(self, feature_list):
 
-        # Initialize current_max value and predicted class
-		current_max = 0
-		predicted_class = "SH"
+        # Initialize current_max dict
+		current_max = {"RA":0,"LA":0,"SH":0}
 		
 		# For each class, instead of the dot product of two very long vectors,
 		# We only sum all the values from the weight vector at the indices given by the training example (same result)
-		for c in self.classes:
-
-			current_weight = 0
+		for c in self.weightmatrix:
 			for i in feature_list:
 				# The feature can only be considered if it was seen during training
 				if i < len(self.weightmatrix[c])-1:
-					current_weight += self.weightmatrix[c][i]
+					current_max[c] += self.weightmatrix[c][i]
 
-			# Predict the class with the highest activation
-			if current_weight > current_max:
-				current_max = current_weight
-				predicted_class = c
+		# Predict the class with the highest activation
+		predicted_class = max(current_max, key=current_max.get)
 				
 		return predicted_class
 		

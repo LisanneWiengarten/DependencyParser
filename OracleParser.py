@@ -256,5 +256,10 @@ class OracleParser:
 			else:
 				self.extract_feats(c, "SH")
 				c = self.shift(c)
+				
+		#print "Correct RAs:", self.correct_ras
+		#print "Found RAs:", self.found_rarcs
+		#print "Correct LAs:", self.correct_las
+		#print "Found LAs:", self.found_larcs
 
 		return 1
