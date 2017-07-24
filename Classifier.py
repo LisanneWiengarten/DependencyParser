@@ -56,8 +56,8 @@ class Classifier:
 				correct_class = item[0]
 				feature_list = item[1]
 			
-				# Initialize current_max dict
-				current_max = {"RA":0,"LA":0,"SH":0}
+				# Initialize current_weights dict
+				current_weights = {"RA":0,"LA":0,"SH":0}
 				
 				# For each class, instead of the dot product of two very long vectors,
 				# We only sum all the values from the weight vector at the indices given by the training example (same result)
@@ -65,10 +65,10 @@ class Classifier:
 				
 					# Take all the numbers in the feature_list as indices in weight vector: Get the vals at these indices and add them
 					for i in feature_list:
-						current_max[c] += self.weightmatrix[c][i]
+						current_weights[c] += self.weightmatrix[c][i]
 		
 				# Predict the class with the highest activation
-				predicted_class = max(current_max, key=current_max.get)
+				predicted_class = max(current_weights, key=current_weights.get)
 				
 				# If we did not predict the correct class, update the weight matrix
 				if (correct_class != predicted_class):
@@ -92,8 +92,8 @@ class Classifier:
 	# Predicts the best transition given the features of a config #
 	def predict(self, feature_list):
 
-        # Initialize current_max dict
-		current_max = {"RA":0,"LA":0,"SH":0}
+        # Initialize current_weights dict
+		current_weights = {"RA":0,"LA":0,"SH":0}
 		
 		# For each class, instead of the dot product of two very long vectors,
 		# We only sum all the values from the weight vector at the indices given by the training example (same result)
@@ -101,10 +101,10 @@ class Classifier:
 			for i in feature_list:
 				# The feature can only be considered if it was seen during training
 				if i < len(self.weightmatrix[c])-1:
-					current_max[c] += self.weightmatrix[c][i]
+					current_weights[c] += self.weightmatrix[c][i]
 
 		# Predict the class with the highest activation
-		predicted_class = max(current_max, key=current_max.get)
+		predicted_class = max(current_weights, key=current_weights.get)
 				
 		return predicted_class
 		
