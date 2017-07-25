@@ -63,14 +63,14 @@ class GuideParser:
 		
 		# My leftmost dependent is the smallest number that has me as head
 		# d.h. ld von S[0]: wenn mein ld > B[0] setze mein ld neu
-		if c.stack[0].ld > c.buffer[0].id:
-			c.stack[0].ld = c.buffer[0].id
+		#if c.stack[0].ld > c.buffer[0].id:
+			#c.stack[0].ld = c.buffer[0].id
 		
 		# My rightmost dependent is the biggest number that has me as head
 		# RA S[0] -> B[0]
 		# d.h. rd von S[0]: wenn rd < B[0] setze mein rd neu
-		if c.stack[0].rd < c.buffer[0].id:
-			c.stack[0].rd = c.buffer[0].id
+		#if c.stack[0].rd < c.buffer[0].id:
+			#c.stack[0].rd = c.buffer[0].id
 			
 			
 		del c.buffer[0]

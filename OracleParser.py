@@ -76,7 +76,7 @@ class OracleParser:
 		
 		# If the stack is empty, the form, pos, head, ld and rd from the front of the stack cannot be recovered
 		if len(c.stack) > 0:
-			hs0 = current_sent.get_token_by_id(c.stack[0].head).pos
+			#s0 = current_sent.get_token_by_id(c.stack[0].head).pos
 			#lds0 = current_sent.get_token_by_id(c.stack[0].ld).pos
 			#rds0 = current_sent.get_token_by_id(c.stack[0].rd).pos
 			s0form = c.stack[0].form
@@ -126,7 +126,7 @@ class OracleParser:
 						"s0pos_"+s0pos+"+b0form,pos_"+b0form+"_"+b0pos,					# S[0]-pos+B[0]-form,pos
 						"s0form_"+s0form+"+b0form_"+b0form,								# S[0]-form+B[0]-form
 						"s0pos_"+s0pos+"+b0pos_"+b0pos,									# S[0]-pos+B[0]-pos
-						"hs0pos_"+hs0+"+s0pos_"+s0pos+"b0pos_"+b0pos,					# h(S[0],-pos+S[0]-pos+B[0]-pos
+						#"hs0pos_"+hs0+"+s0pos_"+s0pos+"b0pos_"+b0pos,					# h(S[0],-pos+S[0]-pos+B[0]-pos
 						#"s0pos_"+s0pos+"+lds0pos_"+lds0+"+b0pos_"+b0pos,				# S[0]-pos+ld(S[0],-pos+B[0]-pos
 						#"s0pos_"+s0pos+"+b0pos_"+b0pos+"+ldb0pos_"+ldb0.pos,			# S[0]-pos+B[0]-pos+ld(B[0],-pos
 						#"s0pos_"+s0pos+"+rds0_"+rds0+"+b0pos_"+b0pos,					# S[0]-pos+rd(S[0],-pos+B[0]-pos
@@ -140,6 +140,7 @@ class OracleParser:
 						"b2form,pos_"+b2form+"_"+b2pos,									# B[2]-form,pos
 						"b0pos_"+b0pos+"+b1pos_"+b1pos+"+b2pos_"+b2pos,					# B[0]-pos+B[1]-pos+B[2]-pos
 						"s1pos_"+s1pos]													# S[1]-pos
+		
 		
 		for feat in feature_set:
 			# If this feat is already in unique_feats, append its index to the current_featlist
@@ -283,11 +284,13 @@ class OracleParser:
 				new_feat = self.extract_feats(c, self.current_sent)
 				self.extracted_feats.append(("SH", new_feat))
 				c = self.shift(c)
-				
+
 		#print "Correct RAs:", self.correct_ras
 		#print "Found RAs:", self.found_rarcs
 		#print "Correct LAs:", self.correct_las
 		#print "Found LAs:", self.found_larcs
 		#print gold.write()
+		
+		
 
 		return 1
