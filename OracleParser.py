@@ -70,19 +70,19 @@ class OracleParser:
 	
 		b0pos = c.buffer[0].pos
 		b0form = c.buffer[0].form
-		#ldb0 = current_sent.get_token_by_id(c.buffer[0].ld)
+		ldb0 = current_sent.get_token_by_id(c.buffer[0].ld)
 		
 		# Set some default values for the cases if stack and/or buffer are too short
 		
 		# If the stack is empty, the form, pos, head, ld and rd from the front of the stack cannot be recovered
 		if len(c.stack) > 0:
-			#s0 = current_sent.get_token_by_id(c.stack[0].head).pos
-			#lds0 = current_sent.get_token_by_id(c.stack[0].ld).pos
-			#rds0 = current_sent.get_token_by_id(c.stack[0].rd).pos
+			hs0pos = current_sent.get_token_by_id(c.stack[0].head).pos
+			lds0 = current_sent.get_token_by_id(c.stack[0].ld).pos
+			rds0 = current_sent.get_token_by_id(c.stack[0].rd).pos
 			s0form = c.stack[0].form
 			s0pos = c.stack[0].pos	
 		else:
-			hs0 = "NAN"
+			hs0pos = "NAN"
 			lds0 = "NAN"
 			rds0 = "NAN"
 			s0form = "NAN"
@@ -113,7 +113,7 @@ class OracleParser:
 		feature_set = ["b0form_"+b0form, 												# B[0]-form
 						"b0pos_"+b0pos, 												# B[0]-pos
 						"b0form,pos_"+b0form+"_"+b0pos,									# B[0]-form,pos
-						#"ldb0pos_"+ldb0.pos,											# ld(B[0])-pos
+						"ldb0pos_"+ldb0.pos,											# ld(B[0])-pos
 						"s0form_"+s0form,												# S[0]-form
 						"s0pos_"+s0pos,													# S[0]-pos
 						"s0form,pos_"+s0form+"_"+s0pos,									# S[0]-form,pos
@@ -126,10 +126,10 @@ class OracleParser:
 						"s0pos_"+s0pos+"+b0form,pos_"+b0form+"_"+b0pos,					# S[0]-pos+B[0]-form,pos
 						"s0form_"+s0form+"+b0form_"+b0form,								# S[0]-form+B[0]-form
 						"s0pos_"+s0pos+"+b0pos_"+b0pos,									# S[0]-pos+B[0]-pos
-						#"hs0pos_"+hs0+"+s0pos_"+s0pos+"b0pos_"+b0pos,					# h(S[0],-pos+S[0]-pos+B[0]-pos
-						#"s0pos_"+s0pos+"+lds0pos_"+lds0+"+b0pos_"+b0pos,				# S[0]-pos+ld(S[0],-pos+B[0]-pos
-						#"s0pos_"+s0pos+"+b0pos_"+b0pos+"+ldb0pos_"+ldb0.pos,			# S[0]-pos+B[0]-pos+ld(B[0],-pos
-						#"s0pos_"+s0pos+"+rds0_"+rds0+"+b0pos_"+b0pos,					# S[0]-pos+rd(S[0],-pos+B[0]-pos
+						"hs0pospos_"+hs0pos+"+s0pos_"+s0pos+"b0pos_"+b0pos,				# h(S[0],-pos+S[0]-pos+B[0]-pos
+						"s0pos_"+s0pos+"+lds0pos_"+lds0+"+b0pos_"+b0pos,				# S[0]-pos+ld(S[0],-pos+B[0]-pos
+						"s0pos_"+s0pos+"+b0pos_"+b0pos+"+ldb0pos_"+ldb0.pos,			# S[0]-pos+B[0]-pos+ld(B[0],-pos
+						"s0pos_"+s0pos+"+rds0_"+rds0+"+b0pos_"+b0pos,					# S[0]-pos+rd(S[0],-pos+B[0]-pos
 						"b1pos_"+b1pos,													# B[1]-pos
 						"b1form_"+b1form,												# B[1]-form
 						"b1form,pos_"+b1form+"_"+b1pos,									# B[1]-form,pos
@@ -216,14 +216,13 @@ class OracleParser:
 		if (c.stack[0].id, c.buffer[0].id) in self.correct_las or (c.buffer[0].id, c.stack[0].id) in self.correct_las:
 			# LA S[0] <- B[0]
 			# My leftmost dependent is the smallest number that has me as head
-			# d.h. ld von B[0]: wenn mein ld > S[0] setze mein ld neu
-			#if c.buffer[0].ld > c.stack[0].id:
-				#c.buffer[0].ld = c.stack[0].id
+			if c.buffer[0].ld > c.stack[0].id:
+				c.buffer[0].ld = c.stack[0].id
 			
 			# My rightmost dependent is the biggest number that has me as head
-			# d.h. rd von B[0]: wenn rd < S[0] setze mein rd neu
-			#if c.buffer[0].rd < c.stack[0].id:
-				#c.buffer[0].rd = c.stack[0].id
+			if c.buffer[0].rd < c.stack[0].id:
+				c.buffer[0].rd = c.stack[0].id
+				
 			return True
 		
 		return False
@@ -235,15 +234,14 @@ class OracleParser:
 		# AND this first item in b already has all its children, then return true
 		if ((c.stack[0].id, c.buffer[0].id) in self.correct_ras and self.has_all_children(c.buffer[0], gold)) or ((c.buffer[0].id, c.stack[0].id) in self.correct_ras and self.has_all_children(c.buffer[0], gold)):
 			# My leftmost dependent is the smallest number that has me as head
-			# d.h. ld von S[0]: wenn mein ld > B[0] setze mein ld neu
-			#if c.stack[0].ld > c.buffer[0].id:
-				#c.stack[0].ld = c.buffer[0].id
+			if c.stack[0].ld > c.buffer[0].id:
+				c.stack[0].ld = c.buffer[0].id
 			
 			# My rightmost dependent is the biggest number that has me as head
 			# RA S[0] -> B[0]
-			# d.h. rd von S[0]: wenn rd < B[0] setze mein rd neu
-			#if c.stack[0].rd < c.buffer[0].id:
-				#c.stack[0].rd = c.buffer[0].id
+			if c.stack[0].rd < c.buffer[0].id:
+				c.stack[0].rd = c.buffer[0].id
+				
 			return True
 			
 		return False
@@ -284,13 +282,6 @@ class OracleParser:
 				new_feat = self.extract_feats(c, self.current_sent)
 				self.extracted_feats.append(("SH", new_feat))
 				c = self.shift(c)
-
-		#print "Correct RAs:", self.correct_ras
-		#print "Found RAs:", self.found_rarcs
-		#print "Correct LAs:", self.correct_las
-		#print "Found LAs:", self.found_larcs
-		#print gold.write()
-		
 		
 
 		return 1

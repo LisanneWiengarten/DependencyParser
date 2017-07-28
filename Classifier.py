@@ -84,9 +84,9 @@ class Classifier:
 		
 			acc = (float(correct)/float(total))*100	
 			# Print final accuracy of training	
-			print "Acc: ", acc
-			for c in self.classes:
-				print c, sum(self.weightmatrix[c])
+			#print "Acc: ", acc
+			#for c in self.classes:
+				#print c, sum(self.weightmatrix[c])
 
 	
 	# Predicts the best transition given the features of a config #

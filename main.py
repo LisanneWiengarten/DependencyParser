@@ -79,6 +79,7 @@ def main(argv):
 		elif opt in ('-model', '--model'):
 			classifier = load_model(arg)
 			oracleparser = OracleParser()
+			oracleparser.unique_feats = classifier.unique_feats
 			
 		### TRAINING ###
 		elif opt in ('--train', '-train'):
