@@ -31,7 +31,7 @@ def usage():
 	print "Without the --output option, the parsing results will be automatically saved to parser_output.conll06"
 	print "For training & testing: python "+sys.argv[0]+" --train trainfile.conll06 --test testfile.conll06.blind"
 	print "For loading & testing: python "+sys.argv[0]+" --model modelname.pik --test testfile.conll06.blind"
-	print "For omitting status updates: python "+sys.argv[0]+"--quiet [other parameters]"
+	print "For omitting status updates: python "+sys.argv[0]+" --quiet [other parameters]"
 	
 
 # Load a model from a pickle file

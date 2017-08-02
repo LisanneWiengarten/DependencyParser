@@ -31,40 +31,9 @@ class OracleParser:
 		self.extracted_feats = list()
 		self.unique_feats = list()
 		
-		
+	
+	
 	# Extracts the features of the current config for training
-	# My feature set:
-	# B[0]-form form of buffer front dog
-	# B[0]-pos pos of buffer front NN
-	# S[0]-form form of stack top The
-	# S[0]-pos pos of stack top DT
-	# B[1]-pos pos of second buffer item VBZ
-	# B[1]-form form of second buffer item
-	# B[2]-form
-	# B[2]-pos
-	# S[1]-pos pos of second stack item root POS
-	# ld(B[0])-pos pos of left-most dep of buffer front JJ
-	# S[0]-form,pos
-	# B[0]-form,pos
-	# B[1]-form,pos
-	# B[2]-form,pos
-	
-	# S[0]-form,pos+B[0]-form,pos
-	# S[0]-form,pos+B[0]-form
-	# S[0]-form+B[0]-form,pos
-	# S[0]-form,pos+B[0]-pos
-	# S[0]-pos+B[0]-form,pos
-	# S[0]-form+B[0]-form
-	# S[0]-pos+B[0]-pos
-	# B[0]-pos+B[1]-pos
-	
-	# B[0]-pos+B[1]-pos+B[2]-pos
-	# S[0]-pos+B[0]-pos+B[1]-pos
-	# h(S[0])-pos+S[0]-pos+B[0]-pos
-	# S[0]-pos+ld(S[0])-pos+B[0]-pos
-	# S[0]-pos+B[0]-pos+ld(B[0])-pos
-	# S[0]-pos+rd(S[0])-pos+B[0]-pos
-	
 	def extract_feats(self, c, current_sent):
 		current_feat = list()
 	
@@ -174,7 +143,6 @@ class OracleParser:
 	def dorightarc(self, c):	
 		self.current_sent.tokenlist[c.buffer[0].id].head = c.stack[0].id
 		self.found_rarcs.add((c.stack[0].id, c.buffer[0].id))
-		
 		
 		del c.buffer[0]
 		c.buffer.appendleft(c.stack[0])
