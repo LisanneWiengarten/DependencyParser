@@ -77,7 +77,8 @@ class OracleParser:
 			b2form = c.buffer[2].form
 		else:
 			b2pos = "NAN"
-			b2form = "NAN"
+			b2form = "NAN"		
+		
 		
 		feature_set = ["b0form_"+b0form, 												# B[0]-form
 						"b0pos_"+b0pos, 												# B[0]-pos
@@ -95,10 +96,10 @@ class OracleParser:
 						"s0pos_"+s0pos+"+b0form,pos_"+b0form+"_"+b0pos,					# S[0]-pos+B[0]-form,pos
 						"s0form_"+s0form+"+b0form_"+b0form,								# S[0]-form+B[0]-form
 						"s0pos_"+s0pos+"+b0pos_"+b0pos,									# S[0]-pos+B[0]-pos
-						"hs0pospos_"+hs0pos+"+s0pos_"+s0pos+"b0pos_"+b0pos,				# h(S[0],-pos+S[0]-pos+B[0]-pos
-						"s0pos_"+s0pos+"+lds0pos_"+lds0+"+b0pos_"+b0pos,				# S[0]-pos+ld(S[0],-pos+B[0]-pos
-						"s0pos_"+s0pos+"+b0pos_"+b0pos+"+ldb0pos_"+ldb0.pos,			# S[0]-pos+B[0]-pos+ld(B[0],-pos
-						"s0pos_"+s0pos+"+rds0_"+rds0+"+b0pos_"+b0pos,					# S[0]-pos+rd(S[0],-pos+B[0]-pos
+						"hs0pospos_"+hs0pos+"+s0pos_"+s0pos+"b0pos_"+b0pos,				# h(S[0])-pos+S[0]-pos+B[0]-pos
+						"s0pos_"+s0pos+"+lds0pos_"+lds0+"+b0pos_"+b0pos,				# S[0]-pos+ld(S[0])-pos+B[0]-pos
+						"s0pos_"+s0pos+"+b0pos_"+b0pos+"+ldb0pos_"+ldb0.pos,			# S[0]-pos+B[0]-pos+ld(B[0])-pos
+						"s0pos_"+s0pos+"+rds0_"+rds0+"+b0pos_"+b0pos,					# S[0]-pos+rd(S[0])-pos+B[0]-pos
 						"b1pos_"+b1pos,													# B[1]-pos
 						"b1form_"+b1form,												# B[1]-form
 						"b1form,pos_"+b1form+"_"+b1pos,									# B[1]-form,pos
@@ -108,7 +109,8 @@ class OracleParser:
 						"b2form_"+b2form,												# B[2]-form
 						"b2form,pos_"+b2form+"_"+b2pos,									# B[2]-form,pos
 						"b0pos_"+b0pos+"+b1pos_"+b1pos+"+b2pos_"+b2pos,					# B[0]-pos+B[1]-pos+B[2]-pos
-						"s1pos_"+s1pos]													# S[1]-pos
+						"s1pos_"+s1pos,													# S[1]-pos
+						"s0pos_"+s0pos+"+b0pos_"+b0pos+"+b1pos_"+b1pos]					# S[0]-pos+B[0]-pos+B[1]-pos									
 		
 		
 		for feat in feature_set:
