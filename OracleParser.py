@@ -92,7 +92,7 @@ class OracleParser:
 						"s0form_"+s0form+"+b0form,pos_"+b0form+"_"+b0pos,				# S[0]-form+B[0]-form,pos
 						"s0form,pos_"+s0form+"_"+s0pos+"+b0pos_"+b0pos,					# S[0]-form,pos+B[0]-pos
 						"s0pos_"+s0pos+"+b0form,pos_"+b0form+"_"+b0pos,					# S[0]-pos+B[0]-form,pos		
-						"s0form,pos_"+s0form+"_"+s0pos+"+b0pos_"+b0pos,					# S[0]-form,pos+B[0]-pos
+						"s0form_"+s0form+"+b0pos_"+b0pos,								# S[0]-form+B[0]-pos
 						"s0pos_"+s0pos+"+b0form,pos_"+b0form+"_"+b0pos,					# S[0]-pos+B[0]-form,pos
 						"s0form_"+s0form+"+b0form_"+b0form,								# S[0]-form+B[0]-form
 						"s0pos_"+s0pos+"+b0pos_"+b0pos,									# S[0]-pos+B[0]-pos
