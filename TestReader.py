@@ -16,7 +16,7 @@ from Sentence import Token
 class TestReader:
 	def __init__(self, infile):
 		self.filey = open(infile, "r")
-		# List of all the sentences in gold standard
+		# List of all the found sentences
 		self.sentlist = list()
 		# Artificial root token
 		self.root = Token(0, "ROOT", "ROOT", "root_pos", "_", "_", -1, "_", "_", "_")
@@ -54,7 +54,7 @@ class TestReader:
 			print s.write()
 			
 			
-	# Writes all the sentences in the goldstandard to a given file #
+	# Writes all the found sentences to a given file #
 	def write_to_file(self, outfile):
 		for s in self.sentlist:
 			outfile.write(s.write()+"\n")

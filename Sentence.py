@@ -35,7 +35,7 @@ class Token:
 
 		
 # Class for Sentences # 
-# A sentence is basically a list of sentences, plus sets for leftarcs and rightarcs
+# A sentence is basically a list of words, plus sets for leftarcs and rightarcs
 class Sentence:
 	def __init__(self, words):
 		self.tokenlist = words

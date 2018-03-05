@@ -52,7 +52,7 @@ class GuideParser:
 		return c
 
 
-	# Creates a right from the top-most token on the stack to the front of the buffer #
+	# Creates a rightarc from the top-most token on the stack to the front of the buffer #
 	# And moves the top-most token from the stack back onto the buffer
 	# Also sets the head in the dependent token
 	def dorightarc(self, c):

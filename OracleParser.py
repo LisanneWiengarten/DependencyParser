@@ -15,8 +15,8 @@ from Sentence import Token
 from Configuration import Configuration
 	
 # Does Oracle parsing with ArcStandard #
-# In: The preprocessed list of sentences from a goldstandard
-# Does parsing on this goldstandard ro extract the features needed for training a classifier
+# In: The pre-processed list of sentences from a goldstandard
+# Does parsing on this goldstandard to extract the features needed for training a classifier
 class OracleParser:
 	def __init__(self):
 		self.oracle = True
@@ -140,7 +140,7 @@ class OracleParser:
 		return c
 
 
-	# Creates a right from the top-most token on the stack to the front of the buffer #
+	# Creates a rightarc from the top-most token on the stack to the front of the buffer #
 	# And moves the top-most token from the stack back onto the buffer
 	def dorightarc(self, c):	
 		self.current_sent.tokenlist[c.buffer[0].id].head = c.stack[0].id
